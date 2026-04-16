@@ -1,0 +1,33 @@
+import { createInertiaApp } from '@inertiajs/react';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { initializeTheme } from '@/hooks/use-appearance';
+import AuthLayout from '@/layouts/auth-layout';
+import SettingsLayout from '@/layouts/settings/layout';
+// ✅ Hapus import AppLayout karena tidak dipakai lagi
+
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+createInertiaApp({
+    title: (title) => (title ? `${title} - ${appName}` : appName),
+    layout: (name) => {
+        switch (true) {
+            case name === 'welcome':
+                return null;
+            case name.startsWith('auth/'):
+                return AuthLayout;
+            case name.startsWith('settings/'):
+                return SettingsLayout; // ✅ Hapus AppLayout, sisakan SettingsLayout saja
+            default:
+                return null; // ✅ Semua halaman lain tidak pakai layout default
+        }
+    },
+    strictMode: true,
+    withApp(app) {
+        return <TooltipProvider delayDuration={0}>{app}</TooltipProvider>;
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});
+
+initializeTheme();

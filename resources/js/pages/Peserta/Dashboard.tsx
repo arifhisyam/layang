@@ -1,331 +1,475 @@
-import { useForm } from '@inertiajs/react';
-import { FormEvent, useState } from 'react';
-import AppNavbar from '@/components/AppNavbar';
+import { Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import PesertaSidebar from '@/components/PesertaSidebar';
 
-interface AuthUser {
-    name: string;
-    email: string;
-    role: string;
-}
-
-interface Juri {
-    name: string;
-}
-
+interface AuthUser { name: string; email: string; role: string; }
+interface Juri { name: string; }
 interface Score {
-    id: number;
-    tema: number;
-    kreativitas: number;
-    estetik: number;
-    teknik: number;
-    rata_rata: number;
-    catatan: string | null;
-    juri: Juri | null;
+    id: number; tema: number; kreativitas: number; estetik: number;
+    teknik: number; rata_rata: number; catatan: string | null; juri: Juri | null;
 }
-
 interface Design {
-    id: number;
-    judul: string;
-    file_path: string;
-    deskripsi: string | null;
-    scores: Score[];
+    id: number; judul: string; file_path: string; deskripsi: string | null; scores: Score[];
 }
-
+interface RankItem {
+    rank: number; id: number; judul: string; file_path: string;
+    peserta: string; user_id: number; nilai_rata_rata: number;
+}
 interface Props {
     auth: { user: AuthUser };
     designs: Design[];
+    top_rankings: RankItem[];
+    my_rank: RankItem | null;
 }
 
-interface UploadForm {
-    judul: string;
-    deskripsi: string;
-    file: File | null;
-    [key: string]: string | File | null;
-}
+const SCORE_CRITERIA = [
+    { icon: 'ti-brush',    label: 'Tema',        key: 'tema',        color: '#6366F1' },
+    { icon: 'ti-bulb',     label: 'Kreativitas', key: 'kreativitas', color: '#EC4899' },
+    { icon: 'ti-sparkles', label: 'Estetik',     key: 'estetik',     color: '#F59E0B' },
+    { icon: 'ti-tool',     label: 'Teknik',      key: 'teknik',      color: '#10B981' },
+] as const;
 
-export default function PesertaDashboard({ auth, designs }: Props) {
-    const [showUploadForm, setShowUploadForm] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+const PAGE_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css');
 
-    const { data, setData, post, processing, errors, reset } = useForm<UploadForm>({
-        judul:     '',
-        deskripsi: '',
-        file:      null,
+  @keyframes float-kite { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-10px) rotate(3deg)} }
+
+  /* ── Base animation keyframes ── */
+  @keyframes slideFromTop {
+    from { opacity: 0; transform: translateY(-36px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideFromLeft {
+    from { opacity: 0; transform: translateX(-56px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideFromRight {
+    from { opacity: 0; transform: translateX(56px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideFromBottom {
+    from { opacity: 0; transform: translateY(36px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.7) rotate(-15deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  /* ── Animation classes — only active when .pd-ready is on parent ── */
+  .pd-ready .anim-top {
+    animation: slideFromTop 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .pd-ready .anim-left {
+    animation: slideFromLeft 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .pd-ready .anim-right {
+    animation: slideFromRight 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .pd-ready .anim-bottom {
+    animation: slideFromBottom 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .pd-ready .anim-pop {
+    animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  /* ── Stagger delays for stat cards ── */
+  .pd-ready .stat-0 { animation-delay: 0.10s; }
+  .pd-ready .stat-1 { animation-delay: 0.18s; }
+  .pd-ready .stat-2 { animation-delay: 0.26s; }
+  .pd-ready .stat-3 { animation-delay: 0.34s; }
+
+  /* ── Stagger delays for design cards (alternating L/R) ── */
+  .pd-ready .design-0 { animation-delay: 0.52s; }
+  .pd-ready .design-1 { animation-delay: 0.62s; }
+  .pd-ready .design-2 { animation-delay: 0.72s; }
+  .pd-ready .design-3 { animation-delay: 0.82s; }
+  .pd-ready .design-4 { animation-delay: 0.92s; }
+
+  /* ── Score pill stagger ── */
+  .pd-ready .pill-0 { animation-delay: 0.60s; }
+  .pd-ready .pill-1 { animation-delay: 0.68s; }
+  .pd-ready .pill-2 { animation-delay: 0.76s; }
+  .pd-ready .pill-3 { animation-delay: 0.84s; }
+
+  /* ── Section delays ── */
+  .pd-ready .delay-1 { animation-delay: 0.08s; }
+  .pd-ready .delay-2 { animation-delay: 0.30s; }
+  .pd-ready .delay-3 { animation-delay: 0.38s; }
+  .pd-ready .delay-4 { animation-delay: 0.46s; }
+
+  /* ── Before ready: hidden ── */
+  .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop {
+    opacity: 0;
+  }
+
+  .pd-page { font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .pd-stat {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px; padding: 22px 20px;
+    transition: transform .22s ease, box-shadow .22s ease;
+  }
+  .pd-stat:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(14,100,180,0.14); }
+
+  .pd-card {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 24px; overflow: hidden;
+  }
+
+  .pd-design-card {
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px; overflow: hidden;
+    transition: transform .22s ease, box-shadow .22s ease;
+  }
+  .pd-design-card:hover { transform: translateY(-3px); box-shadow: 0 20px 48px rgba(14,100,180,0.13); }
+
+  .pd-score-pill {
+    background: linear-gradient(135deg, #EFF8FF, #DBEFFE);
+    border: 1px solid rgba(14,165,233,0.2);
+    border-radius: 14px; padding: 12px 10px; text-align: center;
+  }
+
+  .pd-download-banner {
+    background: linear-gradient(135deg, #0B3D7C 0%, #0E64B4 50%, #0EA5E9 100%);
+    border-radius: 24px; padding: 28px 32px; position: relative; overflow: hidden;
+  }
+  .pd-download-banner::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:180px; height:180px; border-radius:50%; background: rgba(255,255,255,0.06);
+  }
+  .pd-download-banner::after {
+    content:''; position:absolute; bottom:-60px; right:80px;
+    width:120px; height:120px; border-radius:50%; background: rgba(255,255,255,0.04);
+  }
+
+  .pd-rank-banner { border-radius: 24px; padding: 24px 28px; position: relative; overflow: hidden; }
+
+  .pd-main::-webkit-scrollbar { width: 5px; }
+  .pd-main::-webkit-scrollbar-track { background: transparent; }
+  .pd-main::-webkit-scrollbar-thumb { background: rgba(14,100,180,0.2); border-radius: 10px; }
+
+  @media (max-width: 768px) {
+    .pd-mobile-spacer { height: 56px; }
+    .pd-main { padding-bottom: 80px !important; }
+    .pd-stat { padding: 16px; }
+    .pd-design-card > div { flex-direction: column !important; }
+    .pd-design-card > div > div:first-child { width: 100% !important; height: 180px; }
+    .pd-download-banner { padding: 20px 18px; }
+  }
+`;
+
+export default function PesertaDashboard({ auth, designs, top_rankings, my_rank }: Props) {
+    const [ready, setReady] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('peserta-sidebar-collapsed') === 'true';
+        }
+        return false;
     });
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
-        setData('file', file);
-        if (file) {
-            setPreviewUrl(URL.createObjectURL(file));
-        } else {
-            setPreviewUrl(null);
-        }
-    };
-
-    const submit = (e: FormEvent) => {
-        e.preventDefault();
-        post('/peserta/upload', {
-            forceFormData: true,
-            onSuccess: () => {
-                reset();
-                setPreviewUrl(null);
-                setShowUploadForm(false);
-            },
+    // Trigger animasi setelah komponen mount
+    useEffect(() => {
+        // Sedikit delay agar browser sempat render dulu sebelum animasi mulai
+        const t = requestAnimationFrame(() => {
+            requestAnimationFrame(() => setReady(true));
         });
-    };
+        return () => cancelAnimationFrame(t);
+    }, []);
 
-    const sudahDinilai = designs.filter((d) => d.scores?.length > 0);
-    const belumDinilai = designs.filter((d) => d.scores?.length === 0);
+    // Listen to sidebar collapse changes
+    useEffect(() => {
+        const handler = () => {
+            const collapsed = localStorage.getItem('peserta-sidebar-collapsed') === 'true';
+            setSidebarCollapsed(collapsed);
+        };
+        window.addEventListener('storage', handler);
+        // Also listen to custom event for same-window updates
+        const customHandler = (e: CustomEvent) => {
+            setSidebarCollapsed(e.detail?.collapsed ?? false);
+        };
+        window.addEventListener('sidebarToggle', customHandler as EventListener);
+        return () => {
+            window.removeEventListener('storage', handler);
+            window.removeEventListener('sidebarToggle', customHandler as EventListener);
+        };
+    }, []);
+
+    const sudahDinilai = designs.filter(d => d.scores?.length > 0);
+    const belumDinilai = designs.filter(d => d.scores?.length === 0);
+
+    const rankGradient = (rank: number) =>
+        rank === 1 ? 'linear-gradient(135deg, #F59E0B, #EF8C07)' :
+        rank === 2 ? 'linear-gradient(135deg, #94A3B8, #64748B)' :
+        rank === 3 ? 'linear-gradient(135deg, #D97706, #B45309)' :
+        'linear-gradient(135deg, #0EA5E9, #1565C0)';
+
+    const sidebarWidth = sidebarCollapsed ? 70 : 240;
 
     return (
-        <div className="min-h-screen bg-sky-50">
-            <AppNavbar user={auth.user} />
+        <>
+            <style>{PAGE_STYLES}</style>
+            <div className={`pd-page min-h-screen flex${ready ? ' pd-ready' : ''}`}
+                style={{ background: 'linear-gradient(150deg, #EFF8FF 0%, #DBEFFE 40%, #E0EFFE 100%)' }}>
 
-            <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+                <PesertaSidebar user={auth.user} activePage="dashboard" />
 
-                {/* Sapaan */}
-                <div>
-                    <h1 className="text-2xl font-bold text-sky-900">Halo, {auth.user.name}! 👋</h1>
-                    <p className="text-slate-500 text-sm mt-1">
-                        Selamat datang di dashboard peserta — Kompetisi Desain Layang-Layang 2025.
-                    </p>
-                </div>
+                <main className="pd-main flex-1 min-w-0 overflow-y-auto" style={{
+                    padding: 0,
+                    marginLeft: sidebarWidth,
+                    transition: 'margin-left 0.28s cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                    <div className="pd-mobile-spacer" />
+                    <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 24px 60px' }}>
 
-                {/* Stat Ringkas */}
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-sky-50">
-                        <p className="text-3xl font-extrabold text-sky-600">{designs.length}</p>
-                        <p className="text-xs text-slate-400 mt-1">Total Upload</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-green-50">
-                        <p className="text-3xl font-extrabold text-green-600">{sudahDinilai.length}</p>
-                        <p className="text-xs text-slate-400 mt-1">Sudah Dinilai</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-amber-50">
-                        <p className="text-3xl font-extrabold text-amber-500">{belumDinilai.length}</p>
-                        <p className="text-xs text-slate-400 mt-1">Menunggu Nilai</p>
-                    </div>
-                </div>
-
-                {/* Download Juknis */}
-                <div className="bg-gradient-to-r from-indigo-500 to-sky-500 rounded-2xl p-6 text-white shadow flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-lg font-bold mb-1">📄 Juknis Lomba Desain Layang-Layang 2025</h2>
-                        <p className="text-indigo-100 text-sm">
-                            Download petunjuk teknis lengkap sebelum mengikuti kompetisi.
-                        </p>
-                    </div>
-                    <a
-                        href="/storage/juknis/juknis-layang-layang-2025.pdf"
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 bg-white text-indigo-700 font-bold px-6 py-3 rounded-xl hover:bg-indigo-50 transition shadow text-sm whitespace-nowrap"
-                    >
-                        ⬇️ Download Juknis
-                    </a>
-                </div>
-
-                {/* Upload Desain */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                    <div
-                        className="flex justify-between items-center px-6 py-5 cursor-pointer hover:bg-sky-50 transition select-none"
-                        onClick={() => setShowUploadForm(!showUploadForm)}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center text-xl">📤</div>
-                            <div>
-                                <h2 className="font-bold text-slate-800">Upload Desain</h2>
-                                <p className="text-xs text-slate-400">JPG / PNG, maksimal 5MB</p>
+                        {/* ══ HEADER — dari atas ══ */}
+                        <div className="anim-top delay-1" style={{ marginBottom: 32 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                <div className="anim-pop delay-1" style={{
+                                    width: 48, height: 48, borderRadius: 16,
+                                    background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 8px 24px rgba(14,165,233,0.35)',
+                                }}>
+                                    <i className="ti ti-layout-dashboard" style={{ fontSize: 22, color: '#fff' }} />
+                                </div>
+                                <div>
+                                    <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 22, color: '#0B1F3A', lineHeight: 1.2 }}>
+                                        Halo, {auth.user.name}! 👋
+                                    </h1>
+                                    <p style={{ fontSize: 13, color: '#6B8AAA', fontWeight: 500, marginTop: 2 }}>
+                                        Kompetisi Desain Layang-Layang 2026 · Panel Peserta
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <span className="text-slate-400 text-lg">{showUploadForm ? '▲' : '▼'}</span>
-                    </div>
 
-                    {showUploadForm && (
-                        <form onSubmit={submit} className="px-6 pb-6 border-t border-slate-100">
-                            <div className="grid md:grid-cols-2 gap-5 mt-5">
-                                {/* Input */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-600 mb-1">
-                                            Judul Desain <span className="text-red-400">*</span>
-                                        </label>
-                                        <input
-                                            value={data.judul}
-                                            onChange={(e) => setData('judul', e.target.value)}
-                                            placeholder="Contoh: Layang-Layang Nusantara"
-                                            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400 text-sm"
-                                        />
-                                        {errors.judul && <p className="text-red-500 text-xs mt-1">{errors.judul}</p>}
+                        {/* ══ STAT CARDS — dari kanan, stagger ══ */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+                            {[
+                                { icon: 'ti-cloud-upload', label: 'Total Upload',   value: designs.length,                     color: '#0EA5E9', bg: 'rgba(14,165,233,0.1)' },
+                                { icon: 'ti-circle-check', label: 'Sudah Dinilai',  value: sudahDinilai.length,                color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
+                                { icon: 'ti-clock',        label: 'Menunggu Nilai', value: belumDinilai.length,                color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+                                { icon: 'ti-trophy',       label: 'Posisimu',       value: my_rank ? `#${my_rank.rank}` : '—', color: '#6366F1', bg: 'rgba(99,102,241,0.1)', link: '/peserta/leaderboard' },
+                            ].map((s, i) => (
+                                <div key={i} className={`pd-stat anim-right stat-${i}`}>
+                                    <div style={{ width: 40, height: 40, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                                        <i className={`ti ${s.icon}`} style={{ fontSize: 20, color: s.color }} />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-600 mb-1">
-                                            File Desain <span className="text-red-400">*</span>
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png"
-                                            onChange={handleFileChange}
-                                            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-sky-100 file:text-sky-700 file:font-medium"
-                                        />
-                                        {errors.file && <p className="text-red-500 text-xs mt-1">{errors.file}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-600 mb-1">
-                                            Deskripsi (opsional)
-                                        </label>
-                                        <textarea
-                                            value={data.deskripsi}
-                                            onChange={(e) => setData('deskripsi', e.target.value)}
-                                            placeholder="Ceritakan konsep desainmu..."
-                                            rows={3}
-                                            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400 text-sm resize-none"
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="w-full bg-sky-600 text-white py-3 rounded-xl font-bold hover:bg-sky-700 transition disabled:opacity-50 text-sm shadow"
-                                    >
-                                        {processing ? 'Mengupload...' : '📤 Upload Desain'}
-                                    </button>
-                                </div>
-
-                                {/* Preview */}
-                                <div className="flex flex-col items-center justify-center">
-                                    {previewUrl ? (
-                                        <div className="w-full">
-                                            <p className="text-xs text-slate-400 mb-2 font-medium text-center">Preview</p>
-                                            <img
-                                                src={previewUrl}
-                                                alt="Preview"
-                                                className="w-full max-h-56 object-cover rounded-2xl border border-slate-100 shadow"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-48 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
-                                            <span className="text-4xl mb-2">🖼</span>
-                                            <p className="text-sm">Preview gambar muncul di sini</p>
-                                        </div>
+                                    <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 26, color: s.color, lineHeight: 1 }}>{s.value}</p>
+                                    <p style={{ fontSize: 11, color: '#8AACCC', fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '.08em' }}>{s.label}</p>
+                                    {s.link && (
+                                        <Link href={s.link} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 11, color: s.color, fontWeight: 700, textDecoration: 'none' }}>
+                                            Lihat <i className="ti ti-arrow-right" style={{ fontSize: 12 }} />
+                                        </Link>
                                     )}
-                                </div>
-                            </div>
-                        </form>
-                    )}
-                </div>
-
-                {/* Desain & Hasil Penilaian */}
-                <div>
-                    <h2 className="text-xl font-bold text-slate-800 mb-5">📊 Desain & Hasil Penilaian</h2>
-
-                    {designs.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-16 text-center text-slate-300 shadow-sm">
-                            <div className="text-6xl mb-4">🪁</div>
-                            <p className="text-lg font-medium">Kamu belum upload desain apapun.</p>
-                            <p className="text-sm mt-1">Klik "Upload Desain" di atas untuk memulai!</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {designs.map((d) => (
-                                <div key={d.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                                    <div className="flex flex-col md:flex-row">
-                                        {/* Gambar */}
-                                        <div className="md:w-56 flex-shrink-0">
-                                            <img
-                                                src={`/storage/${d.file_path}`}
-                                                alt={d.judul}
-                                                className="w-full h-48 md:h-full object-cover"
-                                            />
-                                        </div>
-
-                                        {/* Konten */}
-                                        <div className="flex-1 p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-slate-800">{d.judul}</h3>
-                                                    {d.deskripsi && (
-                                                        <p className="text-slate-400 text-sm mt-0.5">{d.deskripsi}</p>
-                                                    )}
-                                                </div>
-                                                {d.scores?.length > 0 ? (
-                                                    <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex-shrink-0 ml-2">
-                                                        ✅ Sudah Dinilai
-                                                    </span>
-                                                ) : (
-                                                    <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full flex-shrink-0 ml-2">
-                                                        ⏳ Menunggu Penilaian
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {d.scores?.length > 0 ? (
-                                                <div className="space-y-4">
-                                                    {d.scores.map((s) => (
-                                                        <div key={s.id}>
-                                                            <p className="text-xs text-slate-400 mb-3">
-                                                                Dinilai oleh:{' '}
-                                                                <span className="font-semibold text-slate-600">{s.juri?.name ?? '-'}</span>
-                                                            </p>
-
-                                                            {/* 4 Kriteria */}
-                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                                                                {(
-                                                                    [
-                                                                        ['🎨', 'Tema', s.tema],
-                                                                        ['💡', 'Kreativitas', s.kreativitas],
-                                                                        ['✨', 'Estetik', s.estetik],
-                                                                        ['🔧', 'Teknik', s.teknik],
-                                                                    ] as [string, string, number][]
-                                                                ).map(([icon, label, value]) => (
-                                                                    <div key={label} className="bg-sky-50 rounded-xl p-3 text-center">
-                                                                        <p className="text-base mb-0.5">{icon}</p>
-                                                                        <p className="text-xs text-sky-500 mb-0.5">{label}</p>
-                                                                        <p className="text-xl font-extrabold text-sky-700">{value}</p>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-
-                                                            {/* Rata-rata */}
-                                                            <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl p-4 flex items-center justify-between text-white">
-                                                                <div>
-                                                                    <p className="text-sm opacity-80">Nilai Rata-rata</p>
-                                                                    <p className="text-4xl font-extrabold">{s.rata_rata}</p>
-                                                                </div>
-                                                                <div className="text-right opacity-80">
-                                                                    <p className="text-xs">dari 100 poin</p>
-                                                                    <p className="text-3xl">🏆</p>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Catatan Juri */}
-                                                            {s.catatan && (
-                                                                <div className="mt-3 bg-slate-50 rounded-xl p-4 border-l-4 border-sky-400">
-                                                                    <p className="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wide">
-                                                                        Catatan dari Juri
-                                                                    </p>
-                                                                    <p className="text-sm text-slate-600 italic">"{s.catatan}"</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="bg-amber-50 rounded-xl p-4 text-center">
-                                                    <p className="text-amber-600 text-sm">
-                                                        Desainmu sedang menunggu penilaian dari juri. Bersabarlah! 😊
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
+
+                        {/* ══ RANK BANNER — dari kiri ══ */}
+                        {my_rank && (
+                            <div className="pd-rank-banner anim-left delay-2"
+                                style={{ background: rankGradient(my_rank.rank), marginBottom: 28 }}>
+                                <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 200, background: 'rgba(255,255,255,0.05)', clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', position: 'relative' }}>
+                                    <div style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 52, color: 'rgba(255,255,255,0.25)', lineHeight: 1 }}>
+                                        #{my_rank.rank}
+                                    </div>
+                                    <img src={`/storage/${my_rank.file_path}`} alt={my_rank.judul}
+                                        style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'cover', border: '3px solid rgba(255,255,255,0.35)', flexShrink: 0 }} />
+                                    <div style={{ flex: 1, minWidth: 140 }}>
+                                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 4 }}>Posisimu di Leaderboard</p>
+                                        <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 17, color: '#fff', lineHeight: 1.2 }}>{my_rank.judul}</p>
+                                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>Nilai rata-rata: <strong>{my_rank.nilai_rata_rata}</strong></p>
+                                    </div>
+                                    <Link href="/peserta/leaderboard" style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                                        background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)',
+                                        color: '#fff', fontFamily: "'Montserrat',sans-serif", fontWeight: 700, fontSize: 13,
+                                        padding: '10px 20px', borderRadius: 12, textDecoration: 'none',
+                                        backdropFilter: 'blur(8px)', transition: 'background .2s', flexShrink: 0,
+                                    }}>
+                                        <i className="ti ti-trophy" style={{ fontSize: 15 }} /> Leaderboard
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ══ DOWNLOAD JUKNIS — dari kanan ══ */}
+                        <div className="pd-download-banner anim-right delay-3" style={{ marginBottom: 28 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+                                <div className="anim-pop delay-3" style={{
+                                    width: 56, height: 56, borderRadius: 16,
+                                    background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                    backdropFilter: 'blur(8px)',
+                                }}>
+                                    <i className="ti ti-file-description" style={{ fontSize: 26, color: '#fff' }} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 180 }}>
+                                    <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 4 }}>
+                                        Juknis Lomba Desain Layang-Layang 2026
+                                    </p>
+                                    <p style={{ fontSize: 13, color: 'rgba(186,230,253,0.8)', fontWeight: 400 }}>
+                                        Download petunjuk teknis lengkap sebelum mengikuti kompetisi.
+                                    </p>
+                                </div>
+                                <a href="/storage/juknis/juknis-layang-layang-2026.pdf" download target="_blank" rel="noopener noreferrer"
+                                    style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                                        background: '#fff', color: '#0B3D7C',
+                                        fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 13,
+                                        padding: '12px 22px', borderRadius: 14, textDecoration: 'none',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)', flexShrink: 0,
+                                        transition: 'transform .2s, box-shadow .2s',
+                                    }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 28px rgba(0,0,0,0.2)'; }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)'; }}
+                                >
+                                    <i className="ti ti-download" style={{ fontSize: 16 }} /> Download Juknis
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* ══ DESAIN SECTION — dari bawah ══ */}
+                        <div className="anim-bottom delay-4">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                                <div className="anim-pop delay-4" style={{
+                                    width: 38, height: 38, borderRadius: 12,
+                                    background: 'linear-gradient(135deg, #6366F1, #4338CA)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}>
+                                    <i className="ti ti-palette" style={{ fontSize: 18, color: '#fff' }} />
+                                </div>
+                                <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#0B1F3A' }}>
+                                    Desain & Hasil Penilaian
+                                </h2>
+                                <span style={{ marginLeft: 'auto', background: 'rgba(14,165,233,0.12)', color: '#0EA5E9', borderRadius: 999, padding: '4px 14px', fontSize: 12, fontWeight: 700, fontFamily: "'Montserrat',sans-serif" }}>
+                                    {designs.length} desain
+                                </span>
+                            </div>
+
+                            {designs.length === 0 ? (
+                                <div className="pd-card" style={{ padding: '60px 40px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: 56, marginBottom: 16, animation: 'float-kite 3s ease-in-out infinite' }}>🪁</div>
+                                    <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#0B1F3A', marginBottom: 8 }}>Belum Ada Desain</p>
+                                    <p style={{ fontSize: 14, color: '#8AACCC' }}>Belum ada desain yang terdaftar untuk akunmu.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                    {designs.map((d, idx) => {
+                                        // Ganjil dari kiri, genap dari kanan
+                                        const dir = idx % 2 === 0 ? 'anim-left' : 'anim-right';
+                                        return (
+                                            <div key={d.id} className={`pd-design-card ${dir} design-${Math.min(idx, 4)}`}>
+                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                    {/* Image */}
+                                                    <div style={{ width: 200, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+                                                        <img src={`/storage/${d.file_path}`} alt={d.judul}
+                                                            style={{ width: '100%', height: '100%', minHeight: 200, objectFit: 'cover', display: 'block' }} />
+                                                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 60%, rgba(255,255,255,0.3))' }} />
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <div style={{ flex: 1, padding: '24px 24px 24px 22px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                                                            <div>
+                                                                <h3 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 16, color: '#0B1F3A', marginBottom: 4 }}>{d.judul}</h3>
+                                                                {d.deskripsi && <p style={{ fontSize: 12, color: '#8AACCC', lineHeight: 1.5 }}>{d.deskripsi}</p>}
+                                                            </div>
+                                                            {d.scores?.length > 0 ? (
+                                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, flexShrink: 0, marginLeft: 12 }}>
+                                                                    <i className="ti ti-circle-check" style={{ fontSize: 13 }} /> Sudah Dinilai
+                                                                </span>
+                                                            ) : (
+                                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(245,158,11,0.1)', color: '#D97706', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, flexShrink: 0, marginLeft: 12 }}>
+                                                                    <i className="ti ti-clock" style={{ fontSize: 13 }} /> Menunggu
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {d.scores?.length > 0 ? (
+                                                            d.scores.map(s => (
+                                                                <div key={s.id}>
+                                                                    <p style={{ fontSize: 11, color: '#8AACCC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                        <i className="ti ti-user-star" style={{ fontSize: 13, color: '#6366F1' }} />
+                                                                        Dinilai oleh: <strong style={{ color: '#4A6A8A' }}>{s.juri?.name ?? '—'}</strong>
+                                                                    </p>
+
+                                                                    {/* Score pills — stagger dari bawah */}
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
+                                                                        {SCORE_CRITERIA.map((c, ci) => (
+                                                                            <div key={c.key} className={`pd-score-pill anim-bottom pill-${ci}`}>
+                                                                                <i className={`ti ${c.icon}`} style={{ fontSize: 16, color: c.color, display: 'block', marginBottom: 4 }} />
+                                                                                <p style={{ fontSize: 10, color: '#8AACCC', marginBottom: 2, fontWeight: 600 }}>{c.label}</p>
+                                                                                <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 20, color: c.color }}>{s[c.key]}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    <div style={{
+                                                                        background: 'linear-gradient(135deg, #10B981, #059669)',
+                                                                        borderRadius: 14, padding: '14px 18px',
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                                        marginBottom: s.catatan ? 12 : 0,
+                                                                    }}>
+                                                                        <div>
+                                                                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: 2 }}>Nilai Rata-rata</p>
+                                                                            <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 32, color: '#fff', lineHeight: 1 }}>{s.rata_rata}</p>
+                                                                        </div>
+                                                                        <div style={{ textAlign: 'right' }}>
+                                                                            <i className="ti ti-trophy" style={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
+                                                                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>dari 100</p>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {s.catatan && (
+                                                                        <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderLeft: '3px solid #6366F1', borderRadius: '0 12px 12px 0', padding: '12px 16px' }}>
+                                                                            <p style={{ fontSize: 10, color: '#6366F1', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 4 }}>Catatan Juri</p>
+                                                                            <p style={{ fontSize: 13, color: '#4A6A8A', fontStyle: 'italic' }}>"{s.catatan}"</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                                <i className="ti ti-hourglass" style={{ fontSize: 22, color: '#D97706' }} />
+                                                                <p style={{ fontSize: 13, color: '#92682B' }}>Desainmu sedang menunggu penilaian dari juri. Tetap semangat! 💪</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                </main>
             </div>
-        </div>
+
+            <style>{`
+                @media (max-width: 768px) {
+                    div[style*="grid-template-columns: repeat(4, 1fr)"] {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    div[style*="grid-template-columns: repeat(4, 1fr)"]:first-of-type {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                    }
+                }
+            `}</style>
+        </>
     );
 }

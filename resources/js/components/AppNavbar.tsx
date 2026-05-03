@@ -107,6 +107,8 @@ export default function AppNavbar({ user }: Props) {
                                 Pengaturan Akun
                             </Link>
 
+                            
+
                             {/* Divider */}
                             <div className="border-t border-slate-100 my-1" />
 

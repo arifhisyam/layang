@@ -18,6 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
     ];
 
     protected $hidden = [
@@ -30,16 +31,23 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'        => 'datetime',
-            'password'                 => 'hashed',
-            'two_factor_confirmed_at'  => 'datetime',
+            'email_verified_at'       => 'datetime',
+            'password'                => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
+    // ── Role helpers ──────────────────────────────────
     public function isAdmin(): bool   { return $this->role === 'admin'; }
     public function isJuri(): bool    { return $this->role === 'juri'; }
     public function isPeserta(): bool { return $this->role === 'peserta'; }
 
+    // ── Status helpers ────────────────────────────────
+    public function isPending(): bool  { return $this->status === 'pending'; }
+    public function isApproved(): bool { return $this->status === 'approved'; }
+    public function isRejected(): bool { return $this->status === 'rejected'; }
+
+    // ── Relasi ────────────────────────────────────────
     public function designs() { return $this->hasMany(Design::class); }
     public function scores()  { return $this->hasMany(Score::class, 'juri_id'); }
 }

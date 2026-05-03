@@ -39,6 +39,9 @@ class DesignController extends Controller
         return back()->with('success', 'Desain berhasil diupload!');
     }
 
+    /**
+     * Hapus desain milik sendiri (untuk peserta).
+     */
     public function destroy(Design $design): RedirectResponse
     {
         abort_if($design->user_id !== (int) Auth::id(), 403);
@@ -46,5 +49,17 @@ class DesignController extends Controller
         $design->delete();
 
         return back()->with('success', 'Desain berhasil dihapus.');
+    }
+
+    /**
+     * Hapus desain manapun (khusus admin).
+     */
+    public function destroyAdmin(Design $design): RedirectResponse
+    {
+        abort_if(Auth::user()->role !== 'admin', 403);
+        Storage::disk('public')->delete($design->file_path);
+        $design->delete();
+
+        return back()->with('success', 'Desain berhasil dihapus oleh admin.');
     }
 }

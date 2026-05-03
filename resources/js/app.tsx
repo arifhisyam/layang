@@ -3,6 +3,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+
 // ✅ Hapus import AppLayout karena tidak dipakai lagi
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

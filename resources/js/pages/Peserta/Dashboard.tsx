@@ -1,6 +1,23 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import PesertaSidebar from '@/components/PesertaSidebar';
+import {
+    IconLayoutDashboard,
+    IconCloudUpload,
+    IconCircleCheck,
+    IconClock,
+    IconTrophy,
+    IconArrowRight,
+    IconBrush,
+    IconBulb,
+    IconSparkles,
+    IconTool,
+    IconPalette,
+    IconHourglass,
+    IconUserStar,
+    IconFileDescription,
+    IconDownload,
+} from '@tabler/icons-react';
 
 interface AuthUser { name: string; email: string; role: string; }
 interface Juri { name: string; }
@@ -23,19 +40,17 @@ interface Props {
 }
 
 const SCORE_CRITERIA = [
-    { icon: 'ti-brush',    label: 'Tema',        key: 'tema',        color: '#6366F1' },
-    { icon: 'ti-bulb',     label: 'Kreativitas', key: 'kreativitas', color: '#EC4899' },
-    { icon: 'ti-sparkles', label: 'Estetik',     key: 'estetik',     color: '#F59E0B' },
-    { icon: 'ti-tool',     label: 'Teknik',      key: 'teknik',      color: '#10B981' },
+    { icon: IconBrush,    label: 'Tema',        key: 'tema',        color: '#6366F1' },
+    { icon: IconBulb,     label: 'Kreativitas', key: 'kreativitas', color: '#EC4899' },
+    { icon: IconSparkles, label: 'Estetik',     key: 'estetik',     color: '#F59E0B' },
+    { icon: IconTool,     label: 'Teknik',      key: 'teknik',      color: '#10B981' },
 ] as const;
 
 const PAGE_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
-  @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css');
 
   @keyframes float-kite { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-10px) rotate(3deg)} }
 
-  /* ── Base animation keyframes ── */
   @keyframes slideFromTop {
     from { opacity: 0; transform: translateY(-36px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -57,7 +72,6 @@ const PAGE_STYLES = `
     to   { opacity: 1; transform: scale(1) rotate(0deg); }
   }
 
-  /* ── Animation classes — only active when .pd-ready is on parent ── */
   .pd-ready .anim-top {
     animation: slideFromTop 0.55s cubic-bezier(0.22,1,0.36,1) both;
   }
@@ -74,32 +88,27 @@ const PAGE_STYLES = `
     animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
   }
 
-  /* ── Stagger delays for stat cards ── */
   .pd-ready .stat-0 { animation-delay: 0.10s; }
   .pd-ready .stat-1 { animation-delay: 0.18s; }
   .pd-ready .stat-2 { animation-delay: 0.26s; }
   .pd-ready .stat-3 { animation-delay: 0.34s; }
 
-  /* ── Stagger delays for design cards (alternating L/R) ── */
   .pd-ready .design-0 { animation-delay: 0.52s; }
   .pd-ready .design-1 { animation-delay: 0.62s; }
   .pd-ready .design-2 { animation-delay: 0.72s; }
   .pd-ready .design-3 { animation-delay: 0.82s; }
   .pd-ready .design-4 { animation-delay: 0.92s; }
 
-  /* ── Score pill stagger ── */
   .pd-ready .pill-0 { animation-delay: 0.60s; }
   .pd-ready .pill-1 { animation-delay: 0.68s; }
   .pd-ready .pill-2 { animation-delay: 0.76s; }
   .pd-ready .pill-3 { animation-delay: 0.84s; }
 
-  /* ── Section delays ── */
   .pd-ready .delay-1 { animation-delay: 0.08s; }
   .pd-ready .delay-2 { animation-delay: 0.30s; }
   .pd-ready .delay-3 { animation-delay: 0.38s; }
   .pd-ready .delay-4 { animation-delay: 0.46s; }
 
-  /* ── Before ready: hidden ── */
   .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop {
     opacity: 0;
   }
@@ -175,23 +184,19 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
         return false;
     });
 
-    // Trigger animasi setelah komponen mount
     useEffect(() => {
-        // Sedikit delay agar browser sempat render dulu sebelum animasi mulai
         const t = requestAnimationFrame(() => {
             requestAnimationFrame(() => setReady(true));
         });
         return () => cancelAnimationFrame(t);
     }, []);
 
-    // Listen to sidebar collapse changes
     useEffect(() => {
         const handler = () => {
             const collapsed = localStorage.getItem('peserta-sidebar-collapsed') === 'true';
             setSidebarCollapsed(collapsed);
         };
         window.addEventListener('storage', handler);
-        // Also listen to custom event for same-window updates
         const customHandler = (e: CustomEvent) => {
             setSidebarCollapsed(e.detail?.collapsed ?? false);
         };
@@ -213,6 +218,13 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
 
     const sidebarWidth = sidebarCollapsed ? 70 : 240;
 
+    const STAT_ITEMS = [
+        { Icon: IconCloudUpload, label: 'Total Upload',   value: designs.length,                     color: '#0EA5E9', bg: 'rgba(14,165,233,0.1)' },
+        { Icon: IconCircleCheck, label: 'Sudah Dinilai',  value: sudahDinilai.length,                color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
+        { Icon: IconClock,       label: 'Menunggu Nilai', value: belumDinilai.length,                color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+        { Icon: IconTrophy,      label: 'Posisimu',       value: my_rank ? `#${my_rank.rank}` : '—', color: '#6366F1', bg: 'rgba(99,102,241,0.1)', link: '/peserta/leaderboard' },
+    ] as const;
+
     return (
         <>
             <style>{PAGE_STYLES}</style>
@@ -229,7 +241,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                     <div className="pd-mobile-spacer" />
                     <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 24px 60px' }}>
 
-                        {/* ══ HEADER — dari atas ══ */}
+                        {/* ══ HEADER ══ */}
                         <div className="anim-top delay-1" style={{ marginBottom: 32 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                 <div className="anim-pop delay-1" style={{
@@ -238,7 +250,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: '0 8px 24px rgba(14,165,233,0.35)',
                                 }}>
-                                    <i className="ti ti-layout-dashboard" style={{ fontSize: 22, color: '#fff' }} />
+                                    <IconLayoutDashboard size={22} color="#fff" />
                                 </div>
                                 <div>
                                     <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 22, color: '#0B1F3A', lineHeight: 1.2 }}>
@@ -251,30 +263,25 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                             </div>
                         </div>
 
-                        {/* ══ STAT CARDS — dari kanan, stagger ══ */}
+                        {/* ══ STAT CARDS ══ */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
-                            {[
-                                { icon: 'ti-cloud-upload', label: 'Total Upload',   value: designs.length,                     color: '#0EA5E9', bg: 'rgba(14,165,233,0.1)' },
-                                { icon: 'ti-circle-check', label: 'Sudah Dinilai',  value: sudahDinilai.length,                color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-                                { icon: 'ti-clock',        label: 'Menunggu Nilai', value: belumDinilai.length,                color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
-                                { icon: 'ti-trophy',       label: 'Posisimu',       value: my_rank ? `#${my_rank.rank}` : '—', color: '#6366F1', bg: 'rgba(99,102,241,0.1)', link: '/peserta/leaderboard' },
-                            ].map((s, i) => (
+                            {STAT_ITEMS.map((s, i) => (
                                 <div key={i} className={`pd-stat anim-right stat-${i}`}>
                                     <div style={{ width: 40, height: 40, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                                        <i className={`ti ${s.icon}`} style={{ fontSize: 20, color: s.color }} />
+                                        <s.Icon size={20} color={s.color} />
                                     </div>
                                     <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 26, color: s.color, lineHeight: 1 }}>{s.value}</p>
                                     <p style={{ fontSize: 11, color: '#8AACCC', fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '.08em' }}>{s.label}</p>
-                                    {s.link && (
+                                    {'link' in s && s.link && (
                                         <Link href={s.link} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 11, color: s.color, fontWeight: 700, textDecoration: 'none' }}>
-                                            Lihat <i className="ti ti-arrow-right" style={{ fontSize: 12 }} />
+                                            Lihat <IconArrowRight size={12} />
                                         </Link>
                                     )}
                                 </div>
                             ))}
                         </div>
 
-                        {/* ══ RANK BANNER — dari kiri ══ */}
+                        {/* ══ RANK BANNER ══ */}
                         {my_rank && (
                             <div className="pd-rank-banner anim-left delay-2"
                                 style={{ background: rankGradient(my_rank.rank), marginBottom: 28 }}>
@@ -297,13 +304,13 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                         padding: '10px 20px', borderRadius: 12, textDecoration: 'none',
                                         backdropFilter: 'blur(8px)', transition: 'background .2s', flexShrink: 0,
                                     }}>
-                                        <i className="ti ti-trophy" style={{ fontSize: 15 }} /> Leaderboard
+                                        <IconTrophy size={15} /> Leaderboard
                                     </Link>
                                 </div>
                             </div>
                         )}
 
-                        {/* ══ DOWNLOAD JUKNIS — dari kanan ══ */}
+                        {/* ══ DOWNLOAD JUKNIS ══ */}
                         <div className="pd-download-banner anim-right delay-3" style={{ marginBottom: 28 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
                                 <div className="anim-pop delay-3" style={{
@@ -312,7 +319,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                     backdropFilter: 'blur(8px)',
                                 }}>
-                                    <i className="ti ti-file-description" style={{ fontSize: 26, color: '#fff' }} />
+                                    <IconFileDescription size={26} color="#fff" />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 180 }}>
                                     <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 4 }}>
@@ -334,12 +341,12 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                     onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 28px rgba(0,0,0,0.2)'; }}
                                     onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)'; }}
                                 >
-                                    <i className="ti ti-download" style={{ fontSize: 16 }} /> Download Juknis
+                                    <IconDownload size={16} /> Download Juknis
                                 </a>
                             </div>
                         </div>
 
-                        {/* ══ DESAIN SECTION — dari bawah ══ */}
+                        {/* ══ DESAIN SECTION ══ */}
                         <div className="anim-bottom delay-4">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                                 <div className="anim-pop delay-4" style={{
@@ -347,7 +354,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                     background: 'linear-gradient(135deg, #6366F1, #4338CA)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                                 }}>
-                                    <i className="ti ti-palette" style={{ fontSize: 18, color: '#fff' }} />
+                                    <IconPalette size={18} color="#fff" />
                                 </div>
                                 <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#0B1F3A' }}>
                                     Desain & Hasil Penilaian
@@ -366,7 +373,6 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {designs.map((d, idx) => {
-                                        // Ganjil dari kiri, genap dari kanan
                                         const dir = idx % 2 === 0 ? 'anim-left' : 'anim-right';
                                         return (
                                             <div key={d.id} className={`pd-design-card ${dir} design-${Math.min(idx, 4)}`}>
@@ -387,11 +393,11 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                                             </div>
                                                             {d.scores?.length > 0 ? (
                                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, flexShrink: 0, marginLeft: 12 }}>
-                                                                    <i className="ti ti-circle-check" style={{ fontSize: 13 }} /> Sudah Dinilai
+                                                                    <IconCircleCheck size={13} /> Sudah Dinilai
                                                                 </span>
                                                             ) : (
                                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(245,158,11,0.1)', color: '#D97706', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, flexShrink: 0, marginLeft: 12 }}>
-                                                                    <i className="ti ti-clock" style={{ fontSize: 13 }} /> Menunggu
+                                                                    <IconClock size={13} /> Menunggu
                                                                 </span>
                                                             )}
                                                         </div>
@@ -400,15 +406,15 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                                             d.scores.map(s => (
                                                                 <div key={s.id}>
                                                                     <p style={{ fontSize: 11, color: '#8AACCC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                        <i className="ti ti-user-star" style={{ fontSize: 13, color: '#6366F1' }} />
+                                                                        <IconUserStar size={13} color="#6366F1" />
                                                                         Dinilai oleh: <strong style={{ color: '#4A6A8A' }}>{s.juri?.name ?? '—'}</strong>
                                                                     </p>
 
-                                                                    {/* Score pills — stagger dari bawah */}
+                                                                    {/* Score pills */}
                                                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
                                                                         {SCORE_CRITERIA.map((c, ci) => (
                                                                             <div key={c.key} className={`pd-score-pill anim-bottom pill-${ci}`}>
-                                                                                <i className={`ti ${c.icon}`} style={{ fontSize: 16, color: c.color, display: 'block', marginBottom: 4 }} />
+                                                                                <c.icon size={16} color={c.color} style={{ display: 'block', marginBottom: 4, margin: '0 auto 4px' }} />
                                                                                 <p style={{ fontSize: 10, color: '#8AACCC', marginBottom: 2, fontWeight: 600 }}>{c.label}</p>
                                                                                 <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 20, color: c.color }}>{s[c.key]}</p>
                                                                             </div>
@@ -426,7 +432,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                                                             <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 32, color: '#fff', lineHeight: 1 }}>{s.rata_rata}</p>
                                                                         </div>
                                                                         <div style={{ textAlign: 'right' }}>
-                                                                            <i className="ti ti-trophy" style={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
+                                                                            <IconTrophy size={32} color="rgba(255,255,255,0.3)" />
                                                                             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>dari 100</p>
                                                                         </div>
                                                                     </div>
@@ -441,7 +447,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                                             ))
                                                         ) : (
                                                             <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                                <i className="ti ti-hourglass" style={{ fontSize: 22, color: '#D97706' }} />
+                                                                <IconHourglass size={22} color="#D97706" />
                                                                 <p style={{ fontSize: 13, color: '#92682B' }}>Desainmu sedang menunggu penilaian dari juri. Tetap semangat! 💪</p>
                                                             </div>
                                                         )}

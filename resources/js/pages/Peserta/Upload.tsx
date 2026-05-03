@@ -2,6 +2,20 @@ import { useForm } from '@inertiajs/react';
 import { FormEvent, useState, useEffect, useRef } from 'react';
 import PesertaSidebar from '@/components/PesertaSidebar';
 import PageTransition from '@/components/PageTransition';
+import {
+    IconCloudUpload,
+    IconCircleCheck,
+    IconAlertTriangle,
+    IconPlus,
+    IconInfoCircle,
+    IconCheck,
+    IconLoaderQuarter,
+    IconPhotoPlus,
+    IconPhotoCheck,
+    IconX,
+    IconPhoto,
+    IconCalendar,
+} from '@tabler/icons-react';
 
 interface AuthUser { name: string; email: string; role: string; }
 interface Design {
@@ -34,9 +48,9 @@ interface Particle {
 interface Burst { id: number; particles: Particle[]; }
 
 const SPARK_COLORS = [
-    '#0EA5E9','#38BDF8','#7DD3FC',   // biru muda
-    '#BAE6FD','#E0F2FE','#93C5FD',   // biru sangat muda
-    '#60A5FA','#2563EB','#0284C7',   // biru medium
+    '#0EA5E9','#38BDF8','#7DD3FC',
+    '#BAE6FD','#E0F2FE','#93C5FD',
+    '#60A5FA','#2563EB','#0284C7',
 ];
 
 function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
@@ -89,14 +103,13 @@ function FireworkCanvas() {
 
                     p.x  += p.vx;
                     p.y  += p.vy;
-                    p.vy += 0.20;   // gravity
-                    p.vx *= 0.975;  // drag horizontal
+                    p.vy += 0.20;
+                    p.vx *= 0.975;
 
                     const a = Math.max(0, p.life);
                     ctx.globalAlpha = a;
                     ctx.strokeStyle = p.color;
 
-                    // streak – garis percikan panjang
                     ctx.lineWidth = Math.max(0.5, p.size * p.life * 0.55);
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
@@ -137,7 +150,6 @@ function FireworkCanvas() {
 ───────────────────────────────────────── */
 const PAGE_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
-  @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css');
 
   @keyframes slideFromTop    { from{opacity:0;transform:translateY(-36px)} to{opacity:1;transform:translateY(0)} }
   @keyframes slideFromLeft   { from{opacity:0;transform:translateX(-56px)} to{opacity:1;transform:translateX(0)} }
@@ -225,7 +237,6 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
     const [success, setSuccess]         = useState(false);
     const [ready, setReady]             = useState(false);
 
-    /* Trigger animasi masuk (identik dengan leaderboard) */
     useEffect(() => {
         const t = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)));
         return () => cancelAnimationFrame(t);
@@ -259,7 +270,6 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
         <>
             <style>{PAGE_STYLES}</style>
 
-            {/* ── Percikan kembang api – canvas transparan di atas segalanya ── */}
             <FireworkCanvas />
 
             <div
@@ -282,7 +292,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                         display:'flex', alignItems:'center', justifyContent:'center',
                                         boxShadow:'0 8px 24px rgba(14,165,233,0.35)',
                                     }}>
-                                        <i className="ti ti-cloud-upload" style={{ fontSize:22, color:'#fff' }} />
+                                        <IconCloudUpload size={22} color="#fff" />
                                     </div>
                                     <div>
                                         <h1 style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:900, fontSize:22, color:'#0B1F3A', lineHeight:1.2 }}>Upload Desain</h1>
@@ -300,7 +310,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                     borderRadius:14, padding:'14px 20px', marginBottom:24,
                                     display:'flex', alignItems:'center', gap:12,
                                 }}>
-                                    <i className="ti ti-circle-check" style={{ fontSize:22, color:'#10B981' }} />
+                                    <IconCircleCheck size={22} color="#10B981" />
                                     <div>
                                         <p style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:700, fontSize:14, color:'#065F46' }}>Desain berhasil diupload!</p>
                                         <p style={{ fontSize:12, color:'#047857', marginTop:2 }}>Desainmu sudah masuk dan menunggu penilaian dari juri.</p>
@@ -315,7 +325,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                     borderRadius:14, padding:'14px 20px', marginBottom:24,
                                     display:'flex', alignItems:'center', gap:12,
                                 }}>
-                                    <i className="ti ti-alert-triangle" style={{ fontSize:22, color:'#D97706' }} />
+                                    <IconAlertTriangle size={22} color="#D97706" />
                                     <div>
                                         <p style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:700, fontSize:14, color:'#92400E' }}>Kuota upload penuh</p>
                                         <p style={{ fontSize:12, color:'#B45309', marginTop:2 }}>Kamu sudah mencapai batas maksimal {max_uploads} desain.</p>
@@ -354,7 +364,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                                 background:'linear-gradient(135deg,#0EA5E9,#1565C0)',
                                                 display:'flex', alignItems:'center', justifyContent:'center',
                                             }}>
-                                                <i className="ti ti-plus" style={{ fontSize:18, color:'#fff' }} />
+                                                <IconPlus size={18} color="#fff" />
                                             </div>
                                             <div>
                                                 <p style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:800, fontSize:15, color:'#0B1F3A' }}>Tambah Desain Baru</p>
@@ -392,20 +402,20 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                                 </div>
 
                                                 <div style={{ background:'rgba(99,102,241,0.06)', border:'1px solid rgba(99,102,241,0.15)', borderRadius:14, padding:'14px 16px' }}>
-                                                    <p style={{ fontSize:11, fontWeight:700, color:'#6366F1', letterSpacing:'.1em', textTransform:'uppercase', marginBottom:8 }}>
-                                                        <i className="ti ti-info-circle" style={{ marginRight:5 }} />Tips Upload
+                                                    <p style={{ fontSize:11, fontWeight:700, color:'#6366F1', letterSpacing:'.1em', textTransform:'uppercase', marginBottom:8, display:'flex', alignItems:'center', gap:6 }}>
+                                                        <IconInfoCircle size={14} />Tips Upload
                                                     </p>
                                                     {['Format file: JPG atau PNG','Ukuran maksimal: 5MB per file',`Kamu bisa upload maks. ${max_uploads} desain`,'Pastikan gambar berkualitas tinggi'].map((tip, i) => (
                                                         <p key={i} style={{ fontSize:12, color:'#4A5C8A', display:'flex', alignItems:'center', gap:6, marginBottom:i < 3 ? 5 : 0 }}>
-                                                            <i className="ti ti-check" style={{ fontSize:12, color:'#6366F1', flexShrink:0 }} />{tip}
+                                                            <IconCheck size={12} color="#6366F1" style={{ flexShrink:0 }} />{tip}
                                                         </p>
                                                     ))}
                                                 </div>
 
                                                 <button type="submit" disabled={processing} className="pu-submit-btn">
                                                     {processing
-                                                        ? <><i className="ti ti-loader-2" style={{ fontSize:18, animation:'spin-slow 1s linear infinite' }} />Mengupload...</>
-                                                        : <><i className="ti ti-cloud-upload" style={{ fontSize:18 }} />Upload Desain Sekarang</>
+                                                        ? <><IconLoaderQuarter size={18} style={{ animation:'spin-slow 1s linear infinite' }} />Mengupload...</>
+                                                        : <><IconCloudUpload size={18} />Upload Desain Sekarang</>
                                                     }
                                                 </button>
                                             </div>
@@ -423,11 +433,11 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                                         <img src={previewUrl} alt="Preview" style={{ width:'100%', height:260, objectFit:'cover', display:'block' }} />
                                                         <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.5))' }} />
                                                         <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                                                            <p style={{ fontSize:12, color:'#fff', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'70%' }}>
-                                                                <i className="ti ti-photo-check" style={{ marginRight:5, color:'#34D399' }} />{previewName}
+                                                            <p style={{ fontSize:12, color:'#fff', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'70%', display:'flex', alignItems:'center', gap:5 }}>
+                                                                <IconPhotoCheck size={14} color="#34D399" />{previewName}
                                                             </p>
                                                             <button type="button" onClick={() => handleFile(null)} style={{ background:'rgba(239,68,68,0.85)', border:'none', borderRadius:8, color:'#fff', padding:'5px 10px', cursor:'pointer', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:4 }}>
-                                                                <i className="ti ti-x" style={{ fontSize:12 }} /> Ganti
+                                                                <IconX size={12} /> Ganti
                                                             </button>
                                                         </div>
                                                         <label htmlFor="pu-file" style={{ position:'absolute', inset:0, cursor:'pointer' }} />
@@ -441,7 +451,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                                         onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0] ?? null); }}
                                                     >
                                                         <div style={{ width:72, height:72, borderRadius:20, background:'rgba(14,165,233,0.1)', display:'flex', alignItems:'center', justifyContent:'center', border:'1px solid rgba(14,165,233,0.2)' }}>
-                                                            <i className="ti ti-photo-plus" style={{ fontSize:32, color:'#0EA5E9' }} />
+                                                            <IconPhotoPlus size={32} color="#0EA5E9" />
                                                         </div>
                                                         <div>
                                                             <p style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:800, fontSize:15, color:'#0EA5E9', marginBottom:6 }}>Klik atau drag & drop gambar</p>
@@ -465,7 +475,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                             <div className="anim-bottom delay-5">
                                 <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
                                     <div className="anim-pop delay-5" style={{ width:38, height:38, borderRadius:12, background:'linear-gradient(135deg,#6366F1,#4338CA)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                                        <i className="ti ti-photo" style={{ fontSize:18, color:'#fff' }} />
+                                        <IconPhoto size={18} color="#fff" />
                                     </div>
                                     <h2 style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:800, fontSize:18, color:'#0B1F3A' }}>Desain Saya</h2>
                                     <span style={{ marginLeft:'auto', background:'rgba(14,165,233,0.12)', color:'#0EA5E9', borderRadius:999, padding:'4px 14px', fontSize:12, fontWeight:700, fontFamily:"'Montserrat',sans-serif" }}>
@@ -497,7 +507,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                                     <p style={{ fontFamily:"'Montserrat',sans-serif", fontWeight:800, fontSize:13, color:'#0B1F3A', marginBottom:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.judul}</p>
                                                     {d.deskripsi && <p style={{ fontSize:11, color:'#8AACCC', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:8 }}>{d.deskripsi}</p>}
                                                     <p style={{ fontSize:10, color:'#AAC4D8', display:'flex', alignItems:'center', gap:4 }}>
-                                                        <i className="ti ti-calendar" style={{ fontSize:11 }} />
+                                                        <IconCalendar size={11} />
                                                         {new Date(d.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })}
                                                     </p>
                                                 </div>

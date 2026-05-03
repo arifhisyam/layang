@@ -1,6 +1,20 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import PesertaSidebar from '@/components/PesertaSidebar';
+import {
+    IconTrophy,
+    IconUsers,
+    IconCrown,
+    IconBrush,
+    IconBulb,
+    IconSparkles,
+    IconTool,
+    IconHourglass,
+    IconClipboardList,
+    IconListNumbers,
+    IconMedal,
+    IconUserStar,
+} from '@tabler/icons-react';
 
 interface AuthUser { name: string; email: string; role: string; }
 interface RankItem {
@@ -16,7 +30,6 @@ interface Props {
 
 const PAGE_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
-  @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css');
 
   @keyframes float-medal { 0%,100%{transform:translateY(0) rotate(-4deg)} 50%{transform:translateY(-8px) rotate(4deg)} }
 
@@ -40,12 +53,10 @@ const PAGE_STYLES = `
   .pl-ready .delay-4 { animation-delay: 0.30s; }
   .pl-ready .delay-5 { animation-delay: 0.38s; }
 
-  /* Podium stagger: 2nd=0, 1st=1, 3rd=2 */
   .pl-ready .podium-0 { animation-delay: 0.28s; }
   .pl-ready .podium-1 { animation-delay: 0.14s; }
   .pl-ready .podium-2 { animation-delay: 0.42s; }
 
-  /* Row stagger dari kiri */
   .pl-ready .row-anim { animation: slideFromLeft 0.45s cubic-bezier(0.22,1,0.36,1) both; }
   .pl-ready .row-0  { animation-delay: 0.36s; }
   .pl-ready .row-1  { animation-delay: 0.42s; }
@@ -58,7 +69,6 @@ const PAGE_STYLES = `
   .pl-ready .row-8  { animation-delay: 0.84s; }
   .pl-ready .row-9  { animation-delay: 0.90s; }
 
-  /* Hidden before ready */
   .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop, .anim-scale, .row-anim { opacity: 0; }
 
   .pl-page { font-family:'Plus Jakarta Sans',sans-serif; }
@@ -70,7 +80,7 @@ const PAGE_STYLES = `
     border-radius: 24px;
   }
   .pl-podium-item {
-    display: flex; flex-direction: column; align-items: center; gap: 12;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
     transition: transform .25s ease;
   }
   .pl-podium-item:hover { transform: translateY(-4px); }
@@ -127,10 +137,10 @@ const MY_BANNER_GRADIENT = (rank: number) =>
     'linear-gradient(135deg, #0EA5E9, #1565C0)';
 
 const CRITERIA = [
-    { icon: 'ti-brush',    label: 'Tema',    key: 'tema'        as const, color: '#6366F1' },
-    { icon: 'ti-bulb',     label: 'Kreatif', key: 'kreativitas' as const, color: '#EC4899' },
-    { icon: 'ti-sparkles', label: 'Estetik', key: 'estetik'     as const, color: '#F59E0B' },
-    { icon: 'ti-tool',     label: 'Teknik',  key: 'teknik'      as const, color: '#10B981' },
+    { Icon: IconBrush,    label: 'Tema',    key: 'tema'        as const, color: '#6366F1' },
+    { Icon: IconBulb,     label: 'Kreatif', key: 'kreativitas' as const, color: '#EC4899' },
+    { Icon: IconSparkles, label: 'Estetik', key: 'estetik'     as const, color: '#F59E0B' },
+    { Icon: IconTool,     label: 'Teknik',  key: 'teknik'      as const, color: '#10B981' },
 ];
 
 export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
@@ -156,7 +166,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                     <div className="pl-mobile-spacer" />
                     <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 24px 60px' }}>
 
-                        {/* ══ HEADER — dari atas ══ */}
+                        {/* ══ HEADER ══ */}
                         <div className="anim-top delay-1" style={{ marginBottom: 32 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                                 <div className="anim-pop delay-1" style={{
@@ -165,21 +175,21 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: '0 8px 24px rgba(245,158,11,0.4)',
                                 }}>
-                                    <i className="ti ti-trophy" style={{ fontSize: 22, color: '#fff' }} />
+                                    <IconTrophy size={22} color="#fff" />
                                 </div>
                                 <div>
                                     <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 22, color: '#0B1F3A', lineHeight: 1.2 }}>Leaderboard</h1>
                                     <p style={{ fontSize: 13, color: '#6B8AAA', fontWeight: 500, marginTop: 2 }}>Kompetisi Desain Layang-Layang 2026</p>
                                 </div>
                                 <div style={{ marginLeft: 'auto' }}>
-                                    <span style={{ background: 'rgba(245,158,11,0.12)', color: '#D97706', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, padding: '6px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Montserrat',sans-serif" }}>
-                                        <i className="ti ti-users" style={{ fontSize: 13, marginRight: 5 }} />{rankings.length} peserta
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(245,158,11,0.12)', color: '#D97706', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, padding: '6px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Montserrat',sans-serif" }}>
+                                        <IconUsers size={13} />{rankings.length} peserta
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* ══ MY RANK BANNER — dari kiri ══ */}
+                        {/* ══ MY RANK BANNER ══ */}
                         {my_rank ? (
                             <div className="anim-left delay-2" style={{
                                 background: MY_BANNER_GRADIENT(my_rank.rank),
@@ -199,7 +209,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                                             {CRITERIA.map(c => (
                                                 <span key={c.key} style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    <i className={`ti ${c.icon}`} style={{ fontSize: 13 }} />{my_rank.detail[c.key]}
+                                                    <c.Icon size={13} />{my_rank.detail[c.key]}
                                                 </span>
                                             ))}
                                         </div>
@@ -217,7 +227,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                 display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(12px)',
                             }}>
                                 <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <i className="ti ti-hourglass" style={{ fontSize: 22, color: '#D97706' }} />
+                                    <IconHourglass size={22} color="#D97706" />
                                 </div>
                                 <div>
                                     <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 700, fontSize: 14, color: '#92400E' }}>Belum Ada Penilaian</p>
@@ -228,20 +238,20 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
 
                         {rankings.length === 0 ? (
                             <div className="pl-card anim-scale delay-3" style={{ padding: '70px 40px', textAlign: 'center' }}>
-                                <i className="ti ti-clipboard-list" style={{ fontSize: 56, color: 'rgba(14,165,233,0.2)', display: 'block', marginBottom: 16 }} />
+                                <IconClipboardList size={56} color="rgba(14,165,233,0.2)" style={{ display: 'block', margin: '0 auto 16px' }} />
                                 <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#0B1F3A', marginBottom: 8 }}>Belum Ada Penilaian</p>
                                 <p style={{ fontSize: 14, color: '#8AACCC' }}>Leaderboard akan terisi saat juri mulai memberikan penilaian.</p>
                             </div>
                         ) : (<>
-                            {/* ══ PODIUM — dari bawah, stagger ══ */}
+                            {/* ══ PODIUM ══ */}
                             {top3.length >= 1 && (
                                 <div className="pl-card anim-bottom delay-3" style={{
                                     padding: '36px 28px 32px', marginBottom: 24,
                                     background: 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,248,232,0.85) 100%)',
                                 }}>
                                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                                        <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 14, color: '#0B1F3A', letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                                            <i className="ti ti-trophy" style={{ fontSize: 16, color: '#F59E0B', marginRight: 6 }} />Top 3 Terbaik
+                                        <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 14, color: '#0B1F3A', letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                            <IconTrophy size={16} color="#F59E0B" />Top 3 Terbaik
                                         </p>
                                     </div>
                                     <div className="pl-podium-wrap" style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 28 }}>
@@ -254,7 +264,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                                 <div key={item.id} className={`pl-podium-item anim-bottom podium-${pi}`} style={{ position: 'relative' }}>
                                                     {isFirst && (
                                                         <div style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)', animation: 'float-medal 2.5s ease-in-out infinite' }}>
-                                                            <i className="ti ti-crown" style={{ fontSize: 22, color: '#F59E0B' }} />
+                                                            <IconCrown size={22} color="#F59E0B" />
                                                         </div>
                                                     )}
                                                     <img src={`/storage/${item.file_path}`} alt={item.judul}
@@ -281,11 +291,11 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                 </div>
                             )}
 
-                            {/* ══ RANKING TABLE — card dari bawah, rows dari kiri stagger ══ */}
+                            {/* ══ RANKING TABLE ══ */}
                             <div className="pl-card anim-bottom delay-4" style={{ overflow: 'hidden' }}>
                                 <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(14,165,233,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <i className="ti ti-list-numbers" style={{ fontSize: 18, color: '#0EA5E9' }} />
+                                        <IconListNumbers size={18} color="#0EA5E9" />
                                         <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 14, color: '#0B1F3A' }}>Semua Ranking</p>
                                     </div>
                                     <span style={{ fontSize: 12, color: '#8AACCC' }}>{rankings.length} peserta dinilai</span>
@@ -307,7 +317,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                             style={{ display: 'grid', gridTemplateColumns: '54px 1fr 120px 56px 56px 56px 56px 70px', padding: '14px 20px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                                 <div className="pl-rank-badge" style={{ background: rankBg, color: rankColor }}>
-                                                    {item.rank <= 3 ? <i className="ti ti-medal" style={{ fontSize: 16, color: rankColor }} /> : item.rank}
+                                                    {item.rank <= 3 ? <IconMedal size={16} color={rankColor} /> : item.rank}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -321,7 +331,7 @@ export default function PesertaLeaderboard({ auth, rankings, my_rank }: Props) {
                                                 </div>
                                             </div>
                                             <div className="pl-table-row-detail" style={{ display: 'flex', alignItems: 'center' }}>
-                                                <span className="pl-chip"><i className="ti ti-user-star" style={{ color: '#6366F1' }} />{item.jumlah_juri} juri</span>
+                                                <span className="pl-chip"><IconUserStar size={12} color="#6366F1" />{item.jumlah_juri} juri</span>
                                             </div>
                                             {CRITERIA.map(c => (
                                                 <div key={c.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

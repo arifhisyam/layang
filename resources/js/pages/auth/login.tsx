@@ -459,7 +459,7 @@ export default function Login({ status, canResetPassword = true }: Props) {
                             <p style={{ textAlign: 'center', fontSize: 13.5, color: '#2C4A6A', fontFamily: "'Open Sans', sans-serif" }}>
                                 Belum punya akun?{' '}
                                 <Link href={register()} style={{
-                                    color: '#D93620', fontWeight: 700,
+                                    color: '#1565C0', fontWeight: 700,
                                     fontFamily: "'Montserrat', sans-serif",
                                     textDecoration: 'none', fontSize: 13.5,
                                     letterSpacing: '.02em',

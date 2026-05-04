@@ -339,7 +339,7 @@ function ProfileDropdown({ user, collapsed }: { user: AuthUser; collapsed: boole
                         </span>
                     </div>
 
-                    <Link href="/peserta/profile" className="ps-dd-item">
+                    <Link href="/settings/profile" className="ps-dd-item">
                         <IconUserEdit size={17} /> Edit Profil
                     </Link>
                     <div className="ps-dd-item danger" onClick={() => router.post('/logout')}>

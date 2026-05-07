@@ -443,10 +443,10 @@ export default function JuriDesigns({ auth, designs }: Props) {
 
                                                 {/* Belum dinilai siapapun */}
                                                 {!sudahSendiri && !juriLainSudah && (
-                                                    <Link href={`/juri/designs/${d.id}`} className="nilai-btn">
-                                                        <IconStar size={14} /> Nilai Sekarang
-                                                    </Link>
-                                                )}
+                                                <Link href={`/juri/designs/${d.id}`} className="nilai-btn">
+                                                    <IconStar size={14} /> Nilai Sekarang
+                                                </Link>
+                                            )}
                                             </div>
                                         </div>
                                     );

@@ -11,6 +11,8 @@ import {
     IconChevronUp,
     IconChevronLeft,
     IconChevronRight,
+    IconMenu2,
+    IconX,
 } from '@tabler/icons-react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -36,6 +38,7 @@ const SIDEBAR_STYLES = `
   @keyframes float-slow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
   @keyframes blink-dot  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
   @keyframes avatar-pop { 0%{transform:scale(0.7) translateY(6px);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1);opacity:1} }
+  @keyframes slide-in-left { 0%{transform:translateX(-100%)} 100%{transform:translateX(0)} }
 
   /* ── Dropdown ── */
   .as-dropdown-panel {
@@ -153,13 +156,6 @@ const SIDEBAR_STYLES = `
   }
   .as-sidebar.collapsed .as-divider { margin: 4px 0; }
 
-  /* ── Logo text fade ── */
-  .as-logo-text {
-    transition: opacity 0.2s ease, max-width 0.3s ease;
-    opacity: 1; max-width: 200px; overflow: hidden;
-  }
-  .as-sidebar.collapsed .as-logo-text { opacity: 0; max-width: 0; pointer-events: none; }
-
   /* ── Collapse button ── */
   .as-collapse-btn {
     position: absolute;
@@ -210,7 +206,52 @@ const SIDEBAR_STYLES = `
   }
   .as-logout-icon:hover { background: rgba(239,68,68,0.18); color: #FCA5A5; }
 
-  @media (max-width: 768px) { .as-sidebar { display: none !important; } }
+  /* ── Mobile overlay ── */
+  .as-mobile-overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 98; backdrop-filter: blur(2px);
+  }
+  .as-mobile-overlay.open { display: block; }
+
+  /* ── Mobile menu drawer ── */
+  .as-mobile-drawer {
+    display: none;
+    position: fixed; top: 0; left: 0; bottom: 0; width: 260px;
+    background: rgba(10,60,130,0.96);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    z-index: 99; flex-direction: column;
+    overflow-y: auto;
+  }
+  .as-mobile-drawer.open {
+    display: flex;
+    animation: slide-in-left .25s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  /* ── Mobile top bar ── */
+  .as-mobile-topbar {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; height: 56px;
+    background: rgba(10,60,130,0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    z-index: 97; align-items: center; padding: 0 16px; gap: 14px;
+  }
+  .as-hamburger {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ── Responsive breakpoints ── */
+  @media (max-width: 768px) {
+    .as-sidebar { display: none !important; }
+    .as-mobile-topbar { display: flex; }
+  }
 `;
 
 // ── Avatar color palette ──────────────────────────────────────────────────────
@@ -394,6 +435,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
         }
         return false;
     });
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     const W_EXP = 240;
     const W_COL = 70;
@@ -404,6 +446,14 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
             detail: { collapsed, storageKey: 'admin-sidebar-collapsed' }
         });
         window.dispatchEvent(event);
+    }, []);
+
+    useEffect(() => {
+        const onResize = () => {
+            if (window.innerWidth > 768) setMobileOpen(false);
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     const handleCollapse = (val: boolean) => {
@@ -442,15 +492,292 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
         },
     ];
 
+    // ── Desktop sidebar content ───────────────────────────────────────────────
+    const desktopContent = () => (
+        <>
+            {/* ── Logo ── */}
+            <div style={{
+                padding: collapsed ? '28px 15px 22px' : '28px 24px 22px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: 12, overflow: 'hidden',
+                transition: 'padding 0.28s cubic-bezier(0.4,0,0.2,1)',
+            }}>
+                <Link href="/admin/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                        width: 40, height: 40, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(14,165,233,0.6)',
+                        animation: 'float-slow 4s ease-in-out infinite', flexShrink: 0,
+                        overflow: 'hidden', padding: 6,
+                    }}>
+                        <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </div>
+                    {!collapsed && (
+                        <div>
+                            <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
+                                Layang-Layang
+                            </p>
+                            <p style={{ fontSize: 9, color: '#BAE6FD', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase' }}>
+                                PANEL ADMIN
+                            </p>
+                        </div>
+                    )}
+                </Link>
+            </div>
+
+            {/* ── Live status ── */}
+            <div className="as-live-bar">
+                <span style={{
+                    width: 7, height: 7, borderRadius: '50%', background: '#34D399',
+                    display: 'inline-block', boxShadow: '0 0 8px rgba(52,211,153,0.8)',
+                    animation: 'blink-dot 2s ease-in-out infinite', flexShrink: 0,
+                }} />
+                {!collapsed && (
+                    <span className="as-live-label">LIVE · Kompetisi 2026</span>
+                )}
+            </div>
+
+            {/* ── Nav ── */}
+            <nav className="as-nav">
+                {navGroups.map((group, gi) => (
+                    <div key={group.label}>
+                        {gi > 0 && <Divider />}
+                        <SectionLabel>{group.label}</SectionLabel>
+
+                        {group.items.map(item => {
+                            const isActive = activePage === item.key;
+                            const hasBadge = !isActive && item.badge !== undefined && item.badge > 0;
+
+                            return (
+                                <Link
+                                    key={item.key}
+                                    href={item.href}
+                                    className={`as-nav-item${isActive ? ' active' : ''}`}
+                                >
+                                    <span style={{
+                                        flexShrink: 0, display: 'flex', alignItems: 'center',
+                                        color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
+                                        transition: 'color .2s', position: 'relative',
+                                    }}>
+                                        {item.icon}
+                                        {hasBadge && collapsed && (
+                                            <span style={{
+                                                position: 'absolute', top: -4, right: -5,
+                                                width: 8, height: 8, borderRadius: '50%',
+                                                background: '#EF4444',
+                                                boxShadow: '0 0 6px rgba(239,68,68,0.8)',
+                                                animation: 'blink-dot 2s ease-in-out infinite',
+                                            }} />
+                                        )}
+                                    </span>
+
+                                    <span
+                                        className="as-text-label"
+                                        style={{
+                                            fontFamily: "'Montserrat', sans-serif",
+                                            fontWeight: 700, fontSize: 12.5,
+                                            color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
+                                            letterSpacing: '.03em',
+                                            maxWidth: collapsed ? 0 : 160,
+                                            transition: 'color .2s', flex: 1,
+                                        }}
+                                    >
+                                        {item.label}
+                                    </span>
+
+                                    {isActive && !collapsed && (
+                                        <div style={{
+                                            marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
+                                            background: '#0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.8)',
+                                            flexShrink: 0,
+                                        }} />
+                                    )}
+
+                                    {hasBadge && !collapsed && (
+                                        <span style={{
+                                            marginLeft: 'auto', background: '#EF4444', color: '#fff',
+                                            borderRadius: '50%', width: 18, height: 18,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 9, fontWeight: 900,
+                                            boxShadow: '0 0 10px rgba(239,68,68,0.6)',
+                                            animation: 'blink-dot 2s ease-in-out infinite',
+                                            flexShrink: 0,
+                                        }}>
+                                            {item.badge! > 9 ? '9+' : item.badge}
+                                        </span>
+                                    )}
+
+                                    {collapsed && <span className="as-tooltip">{item.label}</span>}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                ))}
+            </nav>
+
+            {/* ── Profile ── */}
+            <div style={{ padding: '10px 12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <ProfileDropdown user={user} collapsed={collapsed} />
+            </div>
+        </>
+    );
+
+    // ── Mobile drawer content (matches PesertaSidebar exactly) ───────────────
+    const mobileDrawerContent = () => (
+        <>
+            {/* ── Logo ── */}
+            <div style={{
+                padding: '28px 24px 22px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 12, overflow: 'hidden',
+            }}>
+                <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 0 20px rgba(14,165,233,0.6)',
+                    animation: 'float-slow 4s ease-in-out infinite', flexShrink: 0,
+                    overflow: 'hidden', padding: 6,
+                }}>
+                    <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+                <div>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
+                        Layang-Layang
+                    </p>
+                    <p style={{ fontSize: 9, color: '#BAE6FD', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase' }}>
+                        PANEL ADMIN
+                    </p>
+                </div>
+            </div>
+
+            {/* ── Live status (same structure as PesertaSidebar) ── */}
+            <div style={{
+                padding: '14px 24px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 8,
+            }}>
+                <span style={{
+                    width: 7, height: 7, borderRadius: '50%', background: '#34D399',
+                    display: 'inline-block', boxShadow: '0 0 8px rgba(52,211,153,0.8)',
+                    animation: 'blink-dot 2s ease-in-out infinite',
+                    flexShrink: 0,
+                }} />
+                <span style={{ fontSize: 11, color: 'rgba(186,230,253,0.7)', fontWeight: 600, letterSpacing: '.1em' }}>
+                    LIVE · Kompetisi 2026
+                </span>
+            </div>
+
+            {/* ── Nav ── */}
+            <nav className="as-nav" style={{ padding: '10px 12px' }}>
+                <p style={{
+                    fontSize: '8.5px', fontWeight: 700, color: 'rgba(186,230,253,0.35)',
+                    letterSpacing: '.18em', textTransform: 'uppercase',
+                    padding: '14px 16px 6px',
+                    fontFamily: "'Montserrat', sans-serif",
+                }}>
+                    Menu Admin
+                </p>
+
+                {navGroups.map((group, gi) => (
+                    <div key={group.label}>
+                        {gi > 0 && (
+                            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '8px 0' }} />
+                        )}
+
+                        {group.items.map(item => {
+                            const isActive = activePage === item.key;
+                            const hasBadge = !isActive && item.badge !== undefined && item.badge > 0;
+
+                            return (
+                                <Link
+                                    key={item.key}
+                                    href={item.href}
+                                    className={`as-nav-item${isActive ? ' active' : ''}`}
+                                    onClick={() => setMobileOpen(false)}
+                                >
+                                    <span style={{
+                                        flexShrink: 0, display: 'flex', alignItems: 'center',
+                                        color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
+                                        transition: 'color .2s',
+                                    }}>
+                                        {item.icon}
+                                    </span>
+
+                                    <span style={{
+                                        fontFamily: "'Montserrat', sans-serif",
+                                        fontWeight: 700, fontSize: 12.5,
+                                        color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
+                                        letterSpacing: '.03em',
+                                        flex: 1,
+                                        overflow: 'hidden', whiteSpace: 'nowrap',
+                                    }}>
+                                        {item.label}
+                                    </span>
+
+                                    {isActive && (
+                                        <div style={{
+                                            marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
+                                            background: '#0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.8)',
+                                            flexShrink: 0,
+                                        }} />
+                                    )}
+
+                                    {hasBadge && (
+                                        <span style={{
+                                            marginLeft: 'auto', background: '#EF4444', color: '#fff',
+                                            borderRadius: '50%', width: 18, height: 18,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 9, fontWeight: 900,
+                                            boxShadow: '0 0 10px rgba(239,68,68,0.6)',
+                                            animation: 'blink-dot 2s ease-in-out infinite',
+                                            flexShrink: 0,
+                                        }}>
+                                            {item.badge! > 9 ? '9+' : item.badge}
+                                        </span>
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                ))}
+            </nav>
+
+            {/* ── Profile ── */}
+            <div style={{ padding: '10px 12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <ProfileDropdown user={user} collapsed={false} />
+            </div>
+        </>
+    );
+
     return (
         <>
             <style>{SIDEBAR_STYLES}</style>
+
+            {/* ══ DESKTOP SIDEBAR ══ */}
+
+            const [isMobile, setIsMobile] = useState(false);
+
+            useEffect(() => {
+                const check = () => setIsMobile(window.innerWidth <= 768);
+                check();
+                window.addEventListener('resize', check);
+                return () => window.removeEventListener('resize', check);
+            }, []);
+
+            {!isMobile() && (
 
             <div
                 className={`as-sidebar${collapsed ? ' collapsed' : ''}`}
                 style={{ width: collapsed ? W_COL : W_EXP }}
             >
-                {/* ── Collapse button ── */}
                 <button
                     className="as-collapse-btn"
                     onClick={() => handleCollapse(!collapsed)}
@@ -462,132 +789,47 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                     }
                 </button>
 
-                {/* ── Logo ── */}
-                <div style={{
-                    padding: collapsed ? '28px 15px 22px' : '28px 24px 22px',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 12, overflow: 'hidden',
-                    transition: 'padding 0.28s cubic-bezier(0.4,0,0.2,1)',
-                }}>
-                    <Link href="/admin/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                            width: 40, height: 40, borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 0 20px rgba(14,165,233,0.6)',
-                            animation: 'float-slow 4s ease-in-out infinite', flexShrink: 0,
-                            overflow: 'hidden', padding: 6,
-                        }}>
-                            <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                        </div>
-                        {!collapsed && (
-                            <div>
-                                <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
-                                    Layang-Layang
-                                </p>
-                                <p style={{ fontSize: 9, color: '#BAE6FD', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-                                    PANEL ADMIN
-                                </p>
-                            </div>
-                        )}
-                    </Link>
+                {desktopContent()}
+            </div>
+            )}
+            {/* ══ MOBILE TOP BAR ══ */}
+            <div className="as-mobile-topbar">
+                <div className="as-hamburger" onClick={() => setMobileOpen(o => !o)}>
+                    {mobileOpen
+                        ? <IconX size={18} color="#fff" />
+                        : <IconMenu2 size={18} color="#fff" />
+                    }
                 </div>
-
-                {/* ── Live status ── */}
-                <div className="as-live-bar">
-                    <span style={{
-                        width: 7, height: 7, borderRadius: '50%', background: '#34D399',
-                        display: 'inline-block', boxShadow: '0 0 8px rgba(52,211,153,0.8)',
-                        animation: 'blink-dot 2s ease-in-out infinite', flexShrink: 0,
-                    }} />
-                    <span className="as-live-label">LIVE · Kompetisi 2026</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        animation: 'float-slow 4s ease-in-out infinite',
+                        overflow: 'hidden', padding: 4,
+                    }}>
+                        <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                        <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 12, color: '#fff', lineHeight: 1 }}>
+                            Layang-Layang
+                        </p>
+                        <p style={{ fontSize: 8, color: '#BAE6FD', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase' }}>
+                            PANEL ADMIN
+                        </p>
+                    </div>
                 </div>
+            </div>
 
-                {/* ── Nav ── */}
-                <nav className="as-nav">
-                    {navGroups.map((group, gi) => (
-                        <div key={group.label}>
-                            {gi > 0 && <Divider />}
-                            <SectionLabel>{group.label}</SectionLabel>
+            {/* ══ MOBILE OVERLAY ══ */}
+            <div
+                className={`as-mobile-overlay${mobileOpen ? ' open' : ''}`}
+                onClick={() => setMobileOpen(false)}
+            />
 
-                            {group.items.map(item => {
-                                const isActive = activePage === item.key;
-                                const hasBadge = !isActive && item.badge !== undefined && item.badge > 0;
-
-                                return (
-                                    <Link
-                                        key={item.key}
-                                        href={item.href}
-                                        className={`as-nav-item${isActive ? ' active' : ''}`}
-                                    >
-                                        <span style={{
-                                            flexShrink: 0, display: 'flex', alignItems: 'center',
-                                            color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
-                                            transition: 'color .2s', position: 'relative',
-                                        }}>
-                                            {item.icon}
-
-                                            {hasBadge && collapsed && (
-                                                <span style={{
-                                                    position: 'absolute', top: -4, right: -5,
-                                                    width: 8, height: 8, borderRadius: '50%',
-                                                    background: '#EF4444',
-                                                    boxShadow: '0 0 6px rgba(239,68,68,0.8)',
-                                                    animation: 'blink-dot 2s ease-in-out infinite',
-                                                }} />
-                                            )}
-                                        </span>
-
-                                        <span
-                                            className="as-text-label"
-                                            style={{
-                                                fontFamily: "'Montserrat', sans-serif",
-                                                fontWeight: 700, fontSize: 12.5,
-                                                color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
-                                                letterSpacing: '.03em',
-                                                maxWidth: collapsed ? 0 : 160,
-                                                transition: 'color .2s', flex: 1,
-                                            }}
-                                        >
-                                            {item.label}
-                                        </span>
-
-                                        {isActive && !collapsed && (
-                                            <div style={{
-                                                marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
-                                                background: '#0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.8)',
-                                                flexShrink: 0,
-                                            }} />
-                                        )}
-
-                                        {hasBadge && !collapsed && (
-                                            <span style={{
-                                                marginLeft: 'auto', background: '#EF4444', color: '#fff',
-                                                borderRadius: '50%', width: 18, height: 18,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: 9, fontWeight: 900,
-                                                boxShadow: '0 0 10px rgba(239,68,68,0.6)',
-                                                animation: 'blink-dot 2s ease-in-out infinite',
-                                                flexShrink: 0,
-                                            }}>
-                                                {item.badge! > 9 ? '9+' : item.badge}
-                                            </span>
-                                        )}
-
-                                        {collapsed && <span className="as-tooltip">{item.label}</span>}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    ))}
-                </nav>
-
-                {/* ── Profile ── */}
-                <div style={{ padding: '10px 12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                    <ProfileDropdown user={user} collapsed={collapsed} />
-                </div>
+            {/* ══ MOBILE DRAWER ══ */}
+            <div className={`as-mobile-drawer${mobileOpen ? ' open' : ''}`}>
+                {mobileDrawerContent()}
             </div>
         </>
     );

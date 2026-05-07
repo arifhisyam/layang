@@ -21,17 +21,29 @@ class ScoreController extends Controller
     }
 
     public function store(Request $request, int $design): RedirectResponse
-    {
-        $data = $this->validateScore($request);
-
-        Score::create(array_merge($data, [
-            'design_id' => $design,
-            'juri_id'   => (int) Auth::id(),
-        ]));
-
-        return back()->with('success', 'Penilaian berhasil disimpan!');
+{
+    // Cek: apakah sudah ada juri lain yang menilai karya ini?
+    $sudahDinilai = Score::where('design_id', $design)->exists();
+    if ($sudahDinilai) {
+        return back()->withErrors(['error' => 'Karya ini sudah dinilai oleh juri lain.']);
     }
 
+    // Cek: apakah juri ini sudah pernah menilai karya ini?
+    $sudahSendiri = Score::where('design_id', $design)
+        ->where('juri_id', Auth::id())
+        ->exists();
+    if ($sudahSendiri) {
+        return back()->withErrors(['error' => 'Kamu sudah menilai karya ini.']);
+    }
+
+    $data = $this->validateScore($request);
+    Score::create(array_merge($data, [
+        'design_id' => $design,
+        'juri_id'   => (int) Auth::id(),
+    ]));
+
+    return back()->with('success', 'Penilaian berhasil disimpan!');
+}
     public function update(Request $request, int $design): RedirectResponse
     {
         $data = $this->validateScore($request);

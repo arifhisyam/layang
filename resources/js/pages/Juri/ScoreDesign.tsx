@@ -70,7 +70,6 @@ const STYLES = `
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(14,100,180,0.2); border-radius: 10px; }
 
-  /* ── Base animation keyframes — sama persis dengan referensi ── */
   @keyframes slideFromTop {
     from { opacity: 0; transform: translateY(-36px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -93,22 +92,19 @@ const STYLES = `
   }
   @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
   @keyframes orb-drift { 0%,100%{transform:translate(0,0)} 33%{transform:translate(20px,-14px)} 66%{transform:translate(-16px,18px)} }
-  @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(14,165,233,0.4)} 70%{box-shadow:0 0 0 10px rgba(14,165,233,0)} 100%{box-shadow:0 0 0 0 rgba(14,165,233,0)} }
+  @keyframes backdrop-in{ from{opacity:0} to{opacity:1} }
 
-  /* ── Animation classes — active only when .pd-ready on parent ── */
   .pd-ready .anim-top    { animation: slideFromTop    0.55s cubic-bezier(0.22,1,0.36,1) both; }
   .pd-ready .anim-left   { animation: slideFromLeft   0.55s cubic-bezier(0.22,1,0.36,1) both; }
   .pd-ready .anim-right  { animation: slideFromRight  0.55s cubic-bezier(0.22,1,0.36,1) both; }
   .pd-ready .anim-bottom { animation: slideFromBottom 0.55s cubic-bezier(0.22,1,0.36,1) both; }
   .pd-ready .anim-pop    { animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
 
-  /* ── Slider card stagger ── */
   .pd-ready .slider-0 { animation-delay: 0.30s; }
   .pd-ready .slider-1 { animation-delay: 0.38s; }
   .pd-ready .slider-2 { animation-delay: 0.46s; }
   .pd-ready .slider-3 { animation-delay: 0.54s; }
 
-  /* ── Section delays ── */
   .pd-ready .delay-1 { animation-delay: 0.08s; }
   .pd-ready .delay-2 { animation-delay: 0.20s; }
   .pd-ready .delay-3 { animation-delay: 0.30s; }
@@ -116,7 +112,6 @@ const STYLES = `
   .pd-ready .delay-5 { animation-delay: 0.50s; }
   .pd-ready .delay-6 { animation-delay: 0.60s; }
 
-  /* ── Before ready: hidden ── */
   .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop { opacity: 0; }
 
   .gradient-text-sky {
@@ -127,24 +122,25 @@ const STYLES = `
   }
 
   .sd-page { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .sd-main { transition: margin-left 0.35s cubic-bezier(0.22,1,0.36,1); }
 
-  /* ── Sidebar collapse responsive ── */
-  .sd-main {
-    transition: margin-left 0.35s cubic-bezier(0.22,1,0.36,1);
-  }
-
-  /* Custom range slider */
+  /* Range slider */
   input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; outline: none; cursor: pointer; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #0EA5E9, #1565C0); border: 3px solid #fff; box-shadow: 0 2px 8px rgba(14,165,233,0.5); cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
   input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); box-shadow: 0 4px 16px rgba(14,165,233,0.6); }
   input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #0EA5E9, #1565C0); border: 3px solid #fff; box-shadow: 0 2px 8px rgba(14,165,233,0.5); cursor: pointer; }
   input[type=range]:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* Touch-friendly slider pada mobile */
+  @media (max-width: 768px) {
+    input[type=range]::-webkit-slider-thumb { width: 28px; height: 28px; }
+  }
+
   .score-card {
     background: rgba(255,255,255,0.72);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1.5px solid rgba(255,255,255,0.88);
-    border-radius: 20px; padding: 22px 24px;
+    border-radius: 20px; padding: 20px 20px;
     box-shadow: 0 4px 18px rgba(11,31,58,0.06);
     transition: border-color .22s ease, box-shadow .22s ease;
   }
@@ -162,6 +158,7 @@ const STYLES = `
   }
   .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(14,165,233,0.5); }
   .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .submit-btn:active:not(:disabled) { transform: scale(0.98); }
 
   .update-btn {
     width: 100%; padding: 16px 28px; border-radius: 999px;
@@ -175,31 +172,134 @@ const STYLES = `
   }
   .update-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(245,158,11,0.5); }
   .update-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .update-btn:active:not(:disabled) { transform: scale(0.98); }
 
   textarea {
     width: 100%; border: 1.5px solid rgba(14,165,233,0.2); border-radius: 16px;
-    padding: 14px 18px; resize: none; outline: none;
+    padding: 14px 16px; resize: none; outline: none;
     background: rgba(255,255,255,0.8); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #1A3A5C;
     transition: border-color .22s ease, box-shadow .22s ease;
   }
   textarea:focus { border-color: rgba(14,165,233,0.5); box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
   textarea:disabled { opacity: 0.5; cursor: not-allowed; background: rgba(241,245,249,0.9); }
 
+  /* ── MOBILE MENU BUTTON ── */
+  .mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    cursor: pointer;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* ── MOBILE SIDEBAR OVERLAY ── */
+  .mobile-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: rgba(8,18,40,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: backdrop-in .2s ease both;
+  }
+
+  /* ── STICKY SCORE PREVIEW di mobile (muncul saat scroll form) ── */
+  .mobile-score-sticky {
+    display: none;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: rgba(14,100,180,0.88);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding: 12px clamp(14px,4vw,24px);
+  }
+
+  /* ─────────── RESPONSIVE ─────────── */
   @media (max-width: 768px) {
     .sd-main { margin-left: 0 !important; }
-    .form-grid { grid-template-columns: 1fr !important; }
+    .mobile-menu-btn { display: flex; }
+    .mobile-sidebar-overlay { display: block; }
+    .topbar-breadcrumb { display: none !important; }
+
+    /* Grid form: 1 kolom di mobile */
+    .form-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+
+    /* Gambar desain: aspect ratio lebih pendek di mobile */
+    .design-image { aspect-ratio: 16/9 !important; max-height: 220px; }
+
+    /* Info card: baris horizontal, compact */
+    .info-detail-card { padding: 14px 16px !important; }
+
+    /* Live score preview menjadi horizontal row di mobile, bukan block penuh */
+    .live-score-card {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 14px 18px !important;
+      text-align: left !important;
+    }
+    .live-score-number { font-size: 44px !important; }
+    .live-score-bar { margin-top: 0 !important; width: 100px !important; }
+
+    /* Score slider cards: padding lebih compact */
+    .score-card { padding: 16px 16px !important; }
+
+    /* Sticky score bar di mobile */
+    .mobile-score-sticky { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    /* Sembunyikan live score card desktop di mobile (pakai sticky bar) */
+    .desktop-score-preview { display: none !important; }
+
+    /* Info row yang jadi 2 kolom di mobile */
+    .info-grid-mobile {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+    }
+
+    /* Tombol back: lebih compact */
+    .back-link { margin-top: 0 !important; }
+  }
+
+  @media (max-width: 480px) {
+    .score-card { padding: 14px !important; }
+    .live-score-number { font-size: 36px !important; }
+    .submit-btn, .update-btn { font-size: 14px !important; padding: 14px 20px !important; }
   }
 `;
 
 export default function ScoreDesign({ auth, design, existingScore, otherJuriScore }: Props) {
     const [ready, setReady] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
-    typeof window !== 'undefined'
-        ? localStorage.getItem('juri-sidebar-collapsed') === 'true'
-        : false
-);
+        typeof window !== 'undefined'
+            ? localStorage.getItem('juri-sidebar-collapsed') === 'true'
+            : false
+    );
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Trigger animasi setelah mount — sama persis dengan referensi
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth <= 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
     useEffect(() => {
         const t = requestAnimationFrame(() => {
             requestAnimationFrame(() => setReady(true));
@@ -207,7 +307,6 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
         return () => cancelAnimationFrame(t);
     }, []);
 
-    // Listen to sidebar collapse state via custom event
     useEffect(() => {
         const handler = (e: CustomEvent) => {
             if (e.detail?.storageKey === 'juri-sidebar-collapsed') {
@@ -217,6 +316,10 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
         window.addEventListener('sidebarToggle', handler as EventListener);
         return () => window.removeEventListener('sidebarToggle', handler as EventListener);
     }, []);
+
+    useEffect(() => {
+        if (!isMobile) setMobileSidebarOpen(false);
+    }, [isMobile]);
 
     const isLocked = !!otherJuriScore && !existingScore;
 
@@ -254,11 +357,19 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
         background: `linear-gradient(90deg, #0EA5E9 ${value}%, rgba(14,165,233,0.15) ${value}%)`,
     });
 
-    const sidebarWidth = sidebarCollapsed ? 64 : 240;
+    const sidebarWidth = isMobile ? 0 : (sidebarCollapsed ? 64 : 240);
 
     return (
         <>
             <style>{STYLES}</style>
+
+            {/* Mobile sidebar overlay */}
+            {mobileSidebarOpen && isMobile && (
+                <div
+                    className="mobile-sidebar-overlay"
+                    onClick={() => setMobileSidebarOpen(false)}
+                />
+            )}
 
             <div
                 className={`sd-page min-h-screen${ready ? ' pd-ready' : ''}`}
@@ -275,8 +386,16 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                     <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(11,31,58,0.07) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
                 </div>
 
-                {/* Sidebar */}
-                <JuriSidebar user={auth.user} activePage="penilaian" />
+                {/* Sidebar — mobile slide-in */}
+                <div style={{
+                    position: 'fixed',
+                    left: isMobile ? (mobileSidebarOpen ? 0 : -280) : 0,
+                    top: 0,
+                    zIndex: 200,
+                    transition: 'left 0.35s cubic-bezier(0.22,1,0.36,1)',
+                }}>
+                    <JuriSidebar user={auth.user} activePage="penilaian" />
+                </div>
 
                 {/* Main */}
                 <div
@@ -287,39 +406,55 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                         position: 'relative',
                         zIndex: 1,
                         transition: 'margin-left 0.35s cubic-bezier(0.22,1,0.36,1)',
+                        paddingBottom: isMobile ? 80 : 0,
                     }}
                 >
-                    {/* Top Bar — anim-top */}
-                    <div className="anim-top delay-1" style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(14,100,180,0.75)', backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.12)', padding: '0 clamp(20px,4vw,40px)', height: 62, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Link href="/juri/dashboard" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(186,230,253,0.7)', textDecoration: 'none' }}>Dashboard</Link>
-                            <IconChevronRight size={14} color="rgba(186,230,253,0.4)" />
-                            <Link href="/juri/designs" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(186,230,253,0.7)', textDecoration: 'none' }}>Penilaian</Link>
-                            <IconChevronRight size={14} color="rgba(186,230,253,0.4)" />
-                            <h1 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 'clamp(14px,2vw,17px)', color: '#fff', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{design.judul}</h1>
+                    {/* Top Bar */}
+                    <div className="anim-top delay-1" style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(14,100,180,0.75)', backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.12)', padding: '0 clamp(14px,4vw,40px)', height: 62, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                            {/* Hamburger */}
+                            <button
+                                className="mobile-menu-btn"
+                                onClick={() => setMobileSidebarOpen(o => !o)}
+                                aria-label="Buka menu"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <rect y="2" width="18" height="2" rx="1" fill="currentColor"/>
+                                    <rect y="8" width="18" height="2" rx="1" fill="currentColor"/>
+                                    <rect y="14" width="18" height="2" rx="1" fill="currentColor"/>
+                                </svg>
+                            </button>
+
+                            <span className="topbar-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Link href="/juri/dashboard" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(186,230,253,0.7)', textDecoration: 'none' }}>Dashboard</Link>
+                                <IconChevronRight size={14} color="rgba(186,230,253,0.4)" />
+                                <Link href="/juri/designs" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(186,230,253,0.7)', textDecoration: 'none' }}>Penilaian</Link>
+                                <IconChevronRight size={14} color="rgba(186,230,253,0.4)" />
+                            </span>
+                            <h1 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 'clamp(13px,2vw,17px)', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? 160 : 200 }}>{design.judul}</h1>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                             {isLocked && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(100,116,139,0.25)', border: '1px solid rgba(100,116,139,0.4)', color: '#CBD5E1', borderRadius: 20, padding: '5px 14px', fontSize: 11, fontWeight: 700, fontFamily: "'Montserrat', sans-serif" }}>
-                                    <IconLock size={12} /> Terkunci — Sudah Dinilai Juri Lain
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(100,116,139,0.25)', border: '1px solid rgba(100,116,139,0.4)', color: '#CBD5E1', borderRadius: 20, padding: '5px 10px', fontSize: 10, fontWeight: 700, fontFamily: "'Montserrat', sans-serif", whiteSpace: 'nowrap' }}>
+                                    <IconLock size={11} /> {isMobile ? 'Terkunci' : 'Terkunci — Sudah Dinilai Juri Lain'}
                                 </span>
                             )}
                             {existingScore && !isLocked && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.4)', color: '#FDE68A', borderRadius: 20, padding: '5px 14px', fontSize: 11, fontWeight: 700, fontFamily: "'Montserrat', sans-serif" }}>
-                                    <IconEdit size={12} /> Mode Edit Nilai
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.4)', color: '#FDE68A', borderRadius: 20, padding: '5px 10px', fontSize: 10, fontWeight: 700, fontFamily: "'Montserrat', sans-serif", whiteSpace: 'nowrap' }}>
+                                    <IconEdit size={11} /> {isMobile ? 'Edit' : 'Mode Edit Nilai'}
                                 </span>
                             )}
                         </div>
                     </div>
 
                     {/* Content */}
-                    <div style={{ maxWidth: 1050, margin: '0 auto', padding: 'clamp(24px,4vw,40px)' }}>
+                    <div style={{ maxWidth: 1050, margin: '0 auto', padding: 'clamp(16px,4vw,40px) clamp(14px,4vw,40px)' }}>
 
-                        {/* Header — dari atas */}
-                        <div className="anim-top delay-1" style={{ marginBottom: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        {/* Header */}
+                        <div className="anim-top delay-1" style={{ marginBottom: 20 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div className="anim-pop delay-1" style={{
-                                    width: 48, height: 48, borderRadius: 16,
+                                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
                                     background: isLocked
                                         ? 'linear-gradient(135deg, #64748B, #94A3B8)'
                                         : existingScore
@@ -328,11 +463,11 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: isLocked ? '0 8px 24px rgba(100,116,139,0.3)' : '0 8px 24px rgba(14,165,233,0.35)',
                                 }}>
-                                    {isLocked ? <IconLock size={22} color="#fff" /> : existingScore ? <IconEdit size={22} color="#fff" /> : <IconSend size={22} color="#fff" />}
+                                    {isLocked ? <IconLock size={20} color="#fff" /> : existingScore ? <IconEdit size={20} color="#fff" /> : <IconSend size={20} color="#fff" />}
                                 </div>
                                 <div>
-                                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 4, fontFamily: "'Montserrat', sans-serif" }}>— FORM PENILAIAN —</p>
-                                    <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 'clamp(20px,3vw,30px)', color: '#08182E', lineHeight: 1.2 }}>
+                                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 3, fontFamily: "'Montserrat', sans-serif" }}>— FORM PENILAIAN —</p>
+                                    <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 'clamp(18px,3vw,28px)', color: '#08182E', lineHeight: 1.2 }}>
                                         {isLocked
                                             ? <>Nilai <span style={{ color: '#64748B' }}>Terkunci</span></>
                                             : <>Nilai <span className="gradient-text-sky">Desain</span></>
@@ -342,55 +477,61 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                             </div>
                         </div>
 
-                        {/* Banner locked — dari kiri */}
+                        {/* Banner locked */}
                         {isLocked && (
-                            <div className="anim-left delay-2" style={{ background: 'rgba(100,116,139,0.1)', border: '1.5px solid rgba(100,116,139,0.25)', borderRadius: 16, padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <IconAlertCircle size={20} color="#64748B" style={{ flexShrink: 0 }} />
+                            <div className="anim-left delay-2" style={{ background: 'rgba(100,116,139,0.1)', border: '1.5px solid rgba(100,116,139,0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 18, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                                <IconAlertCircle size={18} color="#64748B" style={{ flexShrink: 0, marginTop: 1 }} />
                                 <div>
                                     <p style={{ fontSize: 13, fontWeight: 700, color: '#334155', fontFamily: "'Montserrat', sans-serif", marginBottom: 2 }}>Desain ini sudah dinilai oleh juri lain</p>
-                                    <p style={{ fontSize: 12, color: '#64748B' }}>Setiap karya hanya dinilai oleh satu juri. Kartu ini tidak dapat diubah atau dinilai ulang.</p>
+                                    <p style={{ fontSize: 12, color: '#64748B', lineHeight: 1.5 }}>Setiap karya hanya dinilai oleh satu juri. Kartu ini tidak dapat diubah atau dinilai ulang.</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* Banner edit — dari kiri */}
+                        {/* Banner edit */}
                         {existingScore && !isLocked && (
-                            <div className="anim-left delay-2" style={{ background: 'rgba(245,158,11,0.08)', border: '1.5px solid rgba(245,158,11,0.25)', borderRadius: 16, padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <IconEdit size={20} color="#D97706" style={{ flexShrink: 0 }} />
+                            <div className="anim-left delay-2" style={{ background: 'rgba(245,158,11,0.08)', border: '1.5px solid rgba(245,158,11,0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 18, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                                <IconEdit size={18} color="#D97706" style={{ flexShrink: 0, marginTop: 1 }} />
                                 <div>
                                     <p style={{ fontSize: 13, fontWeight: 700, color: '#92400E', fontFamily: "'Montserrat', sans-serif", marginBottom: 2 }}>Anda sudah menilai desain ini</p>
-                                    <p style={{ fontSize: 12, color: '#B45309' }}>Geser slider untuk mengubah nilai, lalu klik <strong>Update Penilaian</strong>.</p>
+                                    <p style={{ fontSize: 12, color: '#B45309', lineHeight: 1.5 }}>Geser slider untuk mengubah nilai, lalu klik <strong>Update Penilaian</strong>.</p>
                                 </div>
                             </div>
                         )}
 
                         <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 'clamp(16px,2.5vw,28px)', alignItems: 'start' }}>
 
-                            {/* ── Kiri: Info Desain — dari kiri ── */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            {/* ── Kiri: Info Desain ── */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-                                {/* Gambar — anim-left */}
-                                <div className="anim-left delay-2" style={{ borderRadius: 22, overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.88)', boxShadow: '0 8px 32px rgba(11,31,58,0.14)', position: 'relative' }}>
-                                    <img src={`/storage/${design.file_path}`} alt={design.judul} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block', filter: isLocked ? 'grayscale(30%)' : 'none', transition: 'filter .3s ease' }} />
+                                {/* Gambar */}
+                                <div className="anim-left delay-2" style={{ borderRadius: 20, overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.88)', boxShadow: '0 8px 32px rgba(11,31,58,0.14)', position: 'relative' }}>
+                                    <img
+                                        className="design-image"
+                                        src={`/storage/${design.file_path}`}
+                                        alt={design.judul}
+                                        style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block', filter: isLocked ? 'grayscale(30%)' : 'none', transition: 'filter .3s ease' }}
+                                    />
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,24,46,0.6) 0%, transparent 50%)' }} />
-                                    <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
-                                        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 4 }}>{design.judul}</p>
+                                    <div style={{ position: 'absolute', bottom: 14, left: 14, right: 14 }}>
+                                        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 3 }}>{design.judul}</p>
                                         <p style={{ fontSize: 12, color: 'rgba(186,230,253,0.85)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <IconUser size={12} /> {design.user?.name ?? '-'}
+                                            <IconUser size={11} /> {design.user?.name ?? '-'}
                                         </p>
                                     </div>
                                     {isLocked && (
-                                        <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(100,116,139,0.9)', backdropFilter: 'blur(8px)', color: '#fff', borderRadius: 999, padding: '5px 12px', fontSize: 11, fontWeight: 800, fontFamily: "'Montserrat', sans-serif", display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <IconLock size={11} /> Terkunci
+                                        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(100,116,139,0.9)', backdropFilter: 'blur(8px)', color: '#fff', borderRadius: 999, padding: '4px 10px', fontSize: 10, fontWeight: 800, fontFamily: "'Montserrat', sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}>
+                                            <IconLock size={10} /> Terkunci
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Detail info — anim-left */}
-                                <div className="anim-left delay-3" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 20, padding: '20px 22px', boxShadow: '0 4px 18px rgba(11,31,58,0.06)' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                {/* Detail info */}
+                                <div className="anim-left delay-3 info-detail-card" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 18, padding: '18px 20px', boxShadow: '0 4px 18px rgba(11,31,58,0.06)' }}>
+                                    {/* Di mobile, tampilkan sebagai grid 2 kolom */}
+                                    <div className="info-grid-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                            <IconUser size={16} color="#4A6A8A" />
+                                            <IconUser size={15} color="#4A6A8A" style={{ flexShrink: 0 }} />
                                             <div>
                                                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4A6A8A', fontFamily: "'Montserrat', sans-serif" }}>Peserta</p>
                                                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat', sans-serif" }}>{design.user?.name ?? '-'}</p>
@@ -398,7 +539,7 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                         </div>
                                         {design.event && (
                                             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                                <IconCalendarEvent size={16} color="#4A6A8A" />
+                                                <IconCalendarEvent size={15} color="#4A6A8A" style={{ flexShrink: 0 }} />
                                                 <div>
                                                     <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4A6A8A', fontFamily: "'Montserrat', sans-serif" }}>Event</p>
                                                     <p style={{ fontSize: 13, fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat', sans-serif" }}>{design.event.nama}</p>
@@ -407,9 +548,9 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                         )}
                                         {design.deskripsi && (
                                             <>
-                                                <div style={{ height: 1, background: 'rgba(14,165,233,0.12)' }} />
-                                                <div>
-                                                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4A6A8A', fontFamily: "'Montserrat', sans-serif", marginBottom: 6 }}>Deskripsi</p>
+                                                <div style={{ height: 1, background: 'rgba(14,165,233,0.12)', gridColumn: '1 / -1' }} />
+                                                <div style={{ gridColumn: '1 / -1' }}>
+                                                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4A6A8A', fontFamily: "'Montserrat', sans-serif", marginBottom: 5 }}>Deskripsi</p>
                                                     <p style={{ fontSize: 13, color: '#1A3A5C', lineHeight: 1.6 }}>{design.deskripsi}</p>
                                                 </div>
                                             </>
@@ -417,21 +558,21 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                     </div>
                                 </div>
 
-                                {/* Live score preview — anim-left */}
-                                <div className="anim-left delay-4" style={{ background: isLocked ? 'rgba(100,116,139,0.08)' : `linear-gradient(135deg, ${avgColor}18, ${avgColor}08)`, border: isLocked ? '1.5px solid rgba(100,116,139,0.2)' : `1.5px solid ${avgColor}30`, borderRadius: 20, padding: '20px 24px', textAlign: 'center', boxShadow: isLocked ? 'none' : `0 4px 18px ${avgColor}15` }}>
+                                {/* Live score preview — desktop only */}
+                                <div className="anim-left delay-4 desktop-score-preview live-score-card" style={{ background: isLocked ? 'rgba(100,116,139,0.08)' : `linear-gradient(135deg, ${avgColor}18, ${avgColor}08)`, border: isLocked ? '1.5px solid rgba(100,116,139,0.2)' : `1.5px solid ${avgColor}30`, borderRadius: 18, padding: '18px 22px', textAlign: 'center', boxShadow: isLocked ? 'none' : `0 4px 18px ${avgColor}15`, display: 'flex', flexDirection: 'column' }}>
                                     <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: isLocked ? '#94A3B8' : avgColor, fontFamily: "'Montserrat', sans-serif", marginBottom: 8 }}>
                                         {isLocked ? 'Nilai Juri Lain' : 'Rata-rata Sementara'}
                                     </p>
-                                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 64, color: isLocked ? '#94A3B8' : avgColor, lineHeight: 1 }}>{avg}</p>
+                                    <p className="live-score-number" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 58, color: isLocked ? '#94A3B8' : avgColor, lineHeight: 1 }}>{avg}</p>
                                     <p style={{ fontSize: 11, color: '#4A6A8A', marginTop: 6 }}>dari 100 poin</p>
-                                    <div style={{ marginTop: 14, background: isLocked ? 'rgba(100,116,139,0.12)' : `${avgColor}18`, borderRadius: 8, height: 8, overflow: 'hidden' }}>
+                                    <div className="live-score-bar" style={{ marginTop: 12, background: isLocked ? 'rgba(100,116,139,0.12)' : `${avgColor}18`, borderRadius: 8, height: 8, overflow: 'hidden' }}>
                                         <div style={{ width: `${avg}%`, height: '100%', background: isLocked ? 'rgba(100,116,139,0.4)' : `linear-gradient(90deg, ${avgColor}, ${avgColor}bb)`, borderRadius: 8, transition: 'width .5s ease' }} />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* ── Kanan: Form Slider — dari kanan, stagger ── */}
-                            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            {/* ── Kanan: Form Slider ── */}
+                            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
                                 {criteria.map(({ label, field, icon, desc }, ci) => {
                                     const val = Number(data[field]);
@@ -440,13 +581,13 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                         <div key={field} className={`score-card anim-right slider-${ci}`} style={{ opacity: isLocked ? 0.75 : 1 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                                                 <div>
-                                                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 14, color: '#0B1F3A', display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 14, color: '#0B1F3A', display: 'flex', alignItems: 'center', gap: 6 }}>
                                                         <span style={{ color: '#4A6A8A' }}>{icon}</span> {label}
                                                     </p>
-                                                    <p style={{ fontSize: 11, color: '#4A6A8A', marginTop: 3 }}>{desc}</p>
+                                                    <p style={{ fontSize: 11, color: '#4A6A8A', marginTop: 2 }}>{desc}</p>
                                                 </div>
-                                                <div style={{ background: `${barColor}15`, border: `1.5px solid ${barColor}30`, borderRadius: 12, padding: '6px 16px', minWidth: 58, textAlign: 'center' }}>
-                                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 22, color: barColor, lineHeight: 1 }}>{val}</span>
+                                                <div style={{ background: `${barColor}15`, border: `1.5px solid ${barColor}30`, borderRadius: 11, padding: '5px 14px', minWidth: 54, textAlign: 'center', flexShrink: 0 }}>
+                                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 20, color: barColor, lineHeight: 1 }}>{val}</span>
                                                 </div>
                                             </div>
                                             <input
@@ -456,7 +597,7 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                                 onChange={(e) => !isLocked && setData(field, Number(e.target.value))}
                                                 style={getTrackStyle(val)}
                                             />
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
                                                 <span style={{ fontSize: 10, color: '#4A6A8A', fontWeight: 600 }}>0 · Kurang</span>
                                                 <span style={{ fontSize: 10, color: '#4A6A8A', fontWeight: 600 }}>100 · Sempurna</span>
                                             </div>
@@ -464,11 +605,11 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                     );
                                 })}
 
-                                {/* Catatan — anim-right */}
-                                <div className="anim-right delay-5" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 20, padding: '20px 22px', boxShadow: '0 4px 18px rgba(11,31,58,0.06)' }}>
+                                {/* Catatan */}
+                                <div className="anim-right delay-5" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 18, padding: '18px 18px', boxShadow: '0 4px 18px rgba(11,31,58,0.06)' }}>
                                     <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 13, color: '#0B1F3A', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <IconNotes size={15} color="#4A6A8A" /> Catatan untuk Peserta
-                                        <span style={{ fontSize: 10, fontWeight: 500, color: '#4A6A8A', marginLeft: 4 }}>(opsional)</span>
+                                        <IconNotes size={14} color="#4A6A8A" /> Catatan untuk Peserta
+                                        <span style={{ fontSize: 10, fontWeight: 500, color: '#4A6A8A', marginLeft: 2 }}>(opsional)</span>
                                     </p>
                                     <textarea
                                         value={data.catatan}
@@ -480,12 +621,12 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                     {errors.catatan && <p style={{ fontSize: 11, color: '#EF4444', marginTop: 6 }}>{errors.catatan}</p>}
                                 </div>
 
-                                {/* Submit / Update / Locked — anim-bottom */}
+                                {/* Submit / Update / Locked */}
                                 <div className="anim-bottom delay-6">
                                     {isLocked ? (
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'rgba(100,116,139,0.1)', border: '1.5px solid rgba(100,116,139,0.25)', borderRadius: 999, padding: '16px 28px' }}>
-                                            <IconLock size={18} color="#94A3B8" />
-                                            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 14, color: '#64748B' }}>Form Terkunci — Sudah Dinilai Juri Lain</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'rgba(100,116,139,0.1)', border: '1.5px solid rgba(100,116,139,0.25)', borderRadius: 999, padding: '15px 20px' }}>
+                                            <IconLock size={17} color="#94A3B8" />
+                                            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 13, color: '#64748B', textAlign: 'center' }}>Form Terkunci — Sudah Dinilai Juri Lain</span>
                                         </div>
                                     ) : existingScore ? (
                                         <>
@@ -503,13 +644,49 @@ export default function ScoreDesign({ auth, design, existingScore, otherJuriScor
                                     )}
                                 </div>
 
-                                {/* Back — anim-bottom */}
-                                <div className="anim-bottom delay-6">
+                                {/* Back */}
+                                <div className="anim-bottom delay-6 back-link" style={{ marginTop: 2 }}>
                                     <Link href="/juri/designs" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', fontSize: 12, color: '#4A6A8A', fontWeight: 600, fontFamily: "'Montserrat', sans-serif" }}>
                                         <IconArrowLeft size={13} /> Kembali ke Daftar Desain
                                     </Link>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    {/* ── STICKY BOTTOM BAR DI MOBILE — rata-rata sementara ── */}
+                    <div className="mobile-score-sticky" style={{
+                        position: 'fixed',
+                        bottom: 0, left: 0, right: 0,
+                        zIndex: 40,
+                        background: isLocked ? 'rgba(71,85,105,0.88)' : 'rgba(14,100,180,0.88)',
+                        backdropFilter: 'blur(24px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                        borderTop: '1px solid rgba(255,255,255,0.15)',
+                        padding: '10px 16px',
+                        display: isMobile ? 'flex' : 'none',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                    }}>
+                        <div>
+                            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(186,230,253,0.7)', fontFamily: "'Montserrat', sans-serif", marginBottom: 1 }}>
+                                {isLocked ? 'Nilai Juri Lain' : 'Rata-rata Sementara'}
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 32, color: isLocked ? '#CBD5E1' : '#fff', lineHeight: 1 }}>{avg}</p>
+                                <div style={{ width: 80, height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 999, overflow: 'hidden' }}>
+                                    <div style={{ width: `${avg}%`, height: '100%', background: isLocked ? 'rgba(203,213,225,0.6)' : `linear-gradient(90deg, #38BDF8, #fff)`, borderRadius: 999, transition: 'width .4s ease' }} />
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                            {criteria.map(({ label, field }) => (
+                                <div key={field} style={{ textAlign: 'center' }}>
+                                    <p style={{ fontSize: 8, color: 'rgba(186,230,253,0.6)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 1 }}>{label.slice(0,3)}</p>
+                                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff' }}>{Number(data[field])}</p>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

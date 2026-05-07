@@ -223,6 +223,10 @@ const PAGE_STYLES = `
     .pu-mobile-spacer{height:56px;} .pu-main{padding-bottom:80px!important;}
     .pu-form-grid{grid-template-columns:1fr!important;}
     .pu-designs-grid{grid-template-columns:repeat(2,1fr)!important;}
+
+    /* Gambar (kolom kanan) naik ke atas, judul/form (kolom kiri) turun ke bawah */
+    .pu-col-right { order: -1; }
+    .pu-col-left  { order:  1; }
   }
   @media(max-width:480px){ .pu-designs-grid{grid-template-columns:1fr!important;} }
 `;
@@ -376,8 +380,8 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                     <form onSubmit={submit} style={{ padding:'24px 28px' }}>
                                         <div className="pu-form-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:28 }}>
 
-                                            {/* Kiri */}
-                                            <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
+                                            {/* Kiri – judul, deskripsi, tips, tombol */}
+                                            <div className="pu-col-left" style={{ display:'flex', flexDirection:'column', gap:18 }}>
                                                 <div>
                                                     <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#4A6A8A', marginBottom:8, letterSpacing:'.1em', textTransform:'uppercase' }}>
                                                         Judul Desain <span style={{ color:'#EF4444' }}>*</span>
@@ -421,7 +425,7 @@ export default function PesertaUpload({ auth, designs, max_uploads = 5 }: Props)
                                             </div>
 
                                             {/* Kanan – file zone */}
-                                            <div className="anim-right delay-4">
+                                            <div className="pu-col-right anim-right delay-4">
                                                 <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#4A6A8A', marginBottom:8, letterSpacing:'.1em', textTransform:'uppercase' }}>
                                                     File Gambar <span style={{ color:'#EF4444' }}>*</span>
                                                 </label>

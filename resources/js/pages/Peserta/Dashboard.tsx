@@ -72,21 +72,11 @@ const PAGE_STYLES = `
     to   { opacity: 1; transform: scale(1) rotate(0deg); }
   }
 
-  .pd-ready .anim-top {
-    animation: slideFromTop 0.55s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .pd-ready .anim-left {
-    animation: slideFromLeft 0.55s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .pd-ready .anim-right {
-    animation: slideFromRight 0.55s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .pd-ready .anim-bottom {
-    animation: slideFromBottom 0.55s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .pd-ready .anim-pop {
-    animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
+  .pd-ready .anim-top    { animation: slideFromTop    0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  .pd-ready .anim-left   { animation: slideFromLeft   0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  .pd-ready .anim-right  { animation: slideFromRight  0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  .pd-ready .anim-bottom { animation: slideFromBottom 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  .pd-ready .anim-pop    { animation: popIn           0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
 
   .pd-ready .stat-0 { animation-delay: 0.10s; }
   .pd-ready .stat-1 { animation-delay: 0.18s; }
@@ -109,9 +99,7 @@ const PAGE_STYLES = `
   .pd-ready .delay-3 { animation-delay: 0.38s; }
   .pd-ready .delay-4 { animation-delay: 0.46s; }
 
-  .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop {
-    opacity: 0;
-  }
+  .anim-top, .anim-left, .anim-right, .anim-bottom, .anim-pop { opacity: 0; }
 
   .pd-page { font-family:'Plus Jakarta Sans',sans-serif; }
 
@@ -165,46 +153,30 @@ const PAGE_STYLES = `
   .pd-main::-webkit-scrollbar-track { background: transparent; }
   .pd-main::-webkit-scrollbar-thumb { background: rgba(14,100,180,0.2); border-radius: 10px; }
 
+  /* ── KEY FIX: reset margin-left on mobile so sidebar space disappears ── */
   @media (max-width: 768px) {
+    .pd-main { margin-left: 0 !important; padding-bottom: 80px !important; }
     .pd-mobile-spacer { height: 56px; }
-    .pd-main { padding-bottom: 80px !important; }
     .pd-stat { padding: 16px; }
     .pd-design-card > div { flex-direction: column !important; }
     .pd-design-card > div > div:first-child { width: 100% !important; height: 180px; }
     .pd-download-banner { padding: 20px 18px; }
+    .pd-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .pd-score-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  @media (max-width: 480px) {
+    .pd-score-grid { grid-template-columns: repeat(2, 1fr) !important; }
   }
 `;
 
 export default function PesertaDashboard({ auth, designs, top_rankings, my_rank }: Props) {
     const [ready, setReady] = useState(false);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('peserta-sidebar-collapsed') === 'true';
-        }
-        return false;
-    });
 
     useEffect(() => {
         const t = requestAnimationFrame(() => {
             requestAnimationFrame(() => setReady(true));
         });
         return () => cancelAnimationFrame(t);
-    }, []);
-
-    useEffect(() => {
-        const handler = () => {
-            const collapsed = localStorage.getItem('peserta-sidebar-collapsed') === 'true';
-            setSidebarCollapsed(collapsed);
-        };
-        window.addEventListener('storage', handler);
-        const customHandler = (e: CustomEvent) => {
-            setSidebarCollapsed(e.detail?.collapsed ?? false);
-        };
-        window.addEventListener('sidebarToggle', customHandler as EventListener);
-        return () => {
-            window.removeEventListener('storage', handler);
-            window.removeEventListener('sidebarToggle', customHandler as EventListener);
-        };
     }, []);
 
     const sudahDinilai = designs.filter(d => d.scores?.length > 0);
@@ -215,8 +187,6 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
         rank === 2 ? 'linear-gradient(135deg, #94A3B8, #64748B)' :
         rank === 3 ? 'linear-gradient(135deg, #D97706, #B45309)' :
         'linear-gradient(135deg, #0EA5E9, #1565C0)';
-
-    const sidebarWidth = sidebarCollapsed ? 70 : 240;
 
     const STAT_ITEMS = [
         { Icon: IconCloudUpload, label: 'Total Upload',   value: designs.length,                     color: '#0EA5E9', bg: 'rgba(14,165,233,0.1)' },
@@ -233,11 +203,9 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
 
                 <PesertaSidebar user={auth.user} activePage="dashboard" />
 
-                <main className="pd-main flex-1 min-w-0 overflow-y-auto" style={{
-                    padding: 0,
-                    marginLeft: sidebarWidth,
-                    transition: 'margin-left 0.28s cubic-bezier(0.4,0,0.2,1)',
-                }}>
+                {/* margin-left ditangani via CSS .pd-main, bukan inline style,
+                    supaya media query bisa override ke 0 di mobile */}
+                <main className="pd-main flex-1 min-w-0 overflow-y-auto" style={{ padding: 0 }}>
                     <div className="pd-mobile-spacer" />
                     <div style={{ maxWidth: 900, margin: '0 auto', padding: '36px 24px 60px' }}>
 
@@ -264,7 +232,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                         </div>
 
                         {/* ══ STAT CARDS ══ */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+                        <div className="pd-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
                             {STAT_ITEMS.map((s, i) => (
                                 <div key={i} className={`pd-stat anim-right stat-${i}`}>
                                     <div style={{ width: 40, height: 40, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
@@ -411,7 +379,7 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                                                                     </p>
 
                                                                     {/* Score pills */}
-                                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
+                                                                    <div className="pd-score-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
                                                                         {SCORE_CRITERIA.map((c, ci) => (
                                                                             <div key={c.key} className={`pd-score-pill anim-bottom pill-${ci}`}>
                                                                                 <c.icon size={16} color={c.color} style={{ display: 'block', marginBottom: 4, margin: '0 auto 4px' }} />
@@ -463,19 +431,6 @@ export default function PesertaDashboard({ auth, designs, top_rankings, my_rank 
                     </div>
                 </main>
             </div>
-
-            <style>{`
-                @media (max-width: 768px) {
-                    div[style*="grid-template-columns: repeat(4, 1fr)"] {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                    }
-                }
-                @media (max-width: 480px) {
-                    div[style*="grid-template-columns: repeat(4, 1fr)"]:first-of-type {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                    }
-                }
-            `}</style>
         </>
     );
 }

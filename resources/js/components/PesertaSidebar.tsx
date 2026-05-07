@@ -166,30 +166,8 @@ const SIDEBAR_STYLES = `
     z-index: 98; backdrop-filter: blur(2px);
   }
 
-  /* ── Mobile bottom nav ── */
-  .ps-mobile-nav {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(10,60,130,0.92);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-top: 1px solid rgba(255,255,255,0.12);
-    z-index: 100; padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-    justify-content: space-around; align-items: center;
-  }
-  .ps-mobile-nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 6px 14px; border-radius: 10px; text-decoration: none;
-    transition: background .2s;
-    flex: 1;
-  }
-  .ps-mobile-nav-item.active { background: rgba(255,255,255,0.18); }
-  .ps-mobile-nav-item span {
-    font-size: 9px; font-family: 'Montserrat', sans-serif; font-weight: 700;
-    color: rgba(186,230,253,0.6); letter-spacing: .04em;
-  }
-  .ps-mobile-nav-item.active span { color: #fff; }
 
+  
   /* ── Mobile menu drawer ── */
   .ps-mobile-drawer {
     display: none;
@@ -224,7 +202,6 @@ const SIDEBAR_STYLES = `
   @media (max-width: 768px) {
     .ps-sidebar { display: none !important; }
     .ps-mobile-topbar { display: flex; }
-    .ps-mobile-nav { display: flex; }
     .ps-mobile-overlay.open { display: block; }
     .ps-mobile-drawer.open { display: flex; }
   }
@@ -623,21 +600,7 @@ export default function PesertaSidebar({ user, activePage = 'dashboard' }: Props
                 {sidebarContent(true)}
             </div>
 
-            {/* ══ MOBILE BOTTOM NAV ════════════════════════════════════════════ */}
-            <nav className="ps-mobile-nav">
-                {NAV_ITEMS.map(item => (
-                    <Link
-                        key={item.key}
-                        href={item.href}
-                        className={`ps-mobile-nav-item${activePage === item.key ? ' active' : ''}`}
-                    >
-                        <span style={{ color: activePage === item.key ? '#fff' : 'rgba(186,230,253,0.7)', display: 'flex' }}>
-                            {item.icon}
-                        </span>
-                        <span>{item.label.split(' ')[0]}</span>
-                    </Link>
-                ))}
-            </nav>
+         
         </>
     );
 }

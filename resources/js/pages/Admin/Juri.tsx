@@ -99,6 +99,7 @@ const STYLES = `
     background: linear-gradient(135deg,#6366F1,#4338CA); color: #fff;
     box-shadow: 0 6px 18px rgba(99,102,241,0.38);
     transition: all .26s cubic-bezier(.34,1.4,.64,1); letter-spacing: .04em;
+    white-space: nowrap;
   }
   .aj-btn-add:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 26px rgba(99,102,241,0.5); }
   .aj-delete-btn {
@@ -111,6 +112,46 @@ const STYLES = `
   .aj-error { font-size: 11px; color: #DC2626; margin-top: 5px; font-family: 'Montserrat',sans-serif; }
   .aj-input-wrap { position: relative; }
   .aj-input-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #A0B8D0; pointer-events: none; }
+
+  /* ── MOBILE CARD (hidden on desktop) ── */
+  .aj-mobile-card {
+    display: none;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255,255,255,0.88);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(11,31,58,0.07);
+    transition: background .2s;
+  }
+  .aj-desktop-table { display: block; }
+
+  /* ── MOBILE OVERRIDES ── */
+  @media (max-width: 640px) {
+    .aj-desktop-table { display: none !important; }
+    .aj-mobile-card { display: flex; flex-direction: column; }
+    .aj-mobile-list { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+
+    .aj-header-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+    }
+    .aj-btn-add {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+    }
+    .aj-form-actions {
+      flex-direction: column !important;
+    }
+    .aj-btn-primary, .aj-btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+    .aj-glass-form { border-radius: 16px !important; padding: 18px !important; }
+    .aj-list-header { padding: 14px 16px 12px !important; }
+  }
 `;
 
 // ─── Avatar ────────────────────────────────────────────────
@@ -118,11 +159,43 @@ const JURI_PALETTE = [
     ['#6366F1','#4338CA'], ['#0EA5E9','#1565C0'],
     ['#EC4899','#BE185D'], ['#10B981','#047857'], ['#F59E0B','#B45309'],
 ];
-function JuriAvatar({ name }: { name: string }) {
+function JuriAvatar({ name, size = 40 }: { name: string; size?: number }) {
     const [c1, c2] = JURI_PALETTE[name.charCodeAt(0) % JURI_PALETTE.length];
     return (
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg,${c1},${c2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0, fontFamily: "'Montserrat',sans-serif", boxShadow: `0 4px 12px ${c1}55` }}>
+        <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg,${c1},${c2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 800, color: '#fff', flexShrink: 0, fontFamily: "'Montserrat',sans-serif", boxShadow: `0 4px 12px ${c1}55` }}>
             {name[0].toUpperCase()}
+        </div>
+    );
+}
+
+// ─── Mobile Juri Card ─────────────────────────────────────
+function JuriMobileCard({ j, onDelete }: { j: Juri; onDelete: () => void }) {
+    return (
+        <div className="aj-mobile-card">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <JuriAvatar name={j.name} size={38} />
+                    <div>
+                        <p style={{ fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat',sans-serif", fontSize: 13, marginBottom: 2 }}>{j.name}</p>
+                        <span style={{ background: 'rgba(99,102,241,0.1)', color: '#4338CA', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 999, padding: '2px 8px', fontSize: 9, fontWeight: 700, fontFamily: "'Montserrat',sans-serif", letterSpacing: '.08em' }}>JURI</span>
+                    </div>
+                </div>
+                <button className="aj-delete-btn" onClick={onDelete} title="Hapus juri">
+                    <IconTrash size={16} />
+                </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 8, borderTop: '1px solid rgba(99,102,241,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <IconMail size={12} color="#A0B8D0" />
+                    <span style={{ fontSize: 12, color: '#4A6A8A' }}>{j.email}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <IconStar size={12} color="#A0B8D0" />
+                    <span style={{ fontSize: 11, color: '#7A9AB8', fontFamily: "'Montserrat',sans-serif" }}>
+                        Bergabung {new Date(j.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                </div>
+            </div>
         </div>
     );
 }
@@ -172,19 +245,17 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
                     <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(11,31,58,0.06) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
                 </div>
 
-                <div style={{ maxWidth: 1000, margin: '0 auto', padding: 'clamp(32px,4vw,48px) clamp(20px,4vw,40px)', position: 'relative', zIndex: 1 }}>
-
-                  
+                <div style={{ maxWidth: 1000, margin: '0 auto', padding: 'clamp(24px,4vw,48px) clamp(14px,4vw,40px)', position: 'relative', zIndex: 1 }}>
 
                     {/* Header */}
-                    <div className="anim-top delay-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+                    <div className="anim-top delay-1 aj-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <div className="anim-pop delay-1" style={{ width: 48, height: 48, borderRadius: 16, background: 'linear-gradient(135deg,#6366F1,#4338CA)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(99,102,241,0.35)', flexShrink: 0 }}>
                                 <IconStar size={22} color="#fff" />
                             </div>
                             <div>
                                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6366F1', marginBottom: 4, fontFamily: "'Montserrat',sans-serif" }}>— MANAJEMEN —</p>
-                                <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(22px,3vw,32px)', color: '#08182E', lineHeight: 1.2 }}>
+                                <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(20px,3vw,32px)', color: '#08182E', lineHeight: 1.2 }}>
                                     Kelola <span style={{ background: 'linear-gradient(135deg,#6366F1,#4338CA)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Juri</span>
                                 </h1>
                                 <p style={{ fontSize: 13, color: '#1A3A5C', marginTop: 4 }}>{juri_users.length} juri aktif terdaftar dalam sistem</p>
@@ -197,13 +268,13 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
 
                     {/* Form tambah juri */}
                     {showForm && (
-                        <div className="aj-glass-form" style={{ borderRadius: 22, padding: 'clamp(22px,3vw,32px)', marginBottom: 28 }}>
+                        <div className="aj-glass-form" style={{ borderRadius: 22, padding: 'clamp(18px,3vw,32px)', marginBottom: 28 }}>
                             <div style={{ marginBottom: 22 }}>
                                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#6366F1', marginBottom: 4, fontFamily: "'Montserrat',sans-serif" }}>— FORM —</p>
                                 <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#08182E' }}>Buat Akun Juri Baru</h2>
                             </div>
                             <form onSubmit={submitJuri}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 18, marginBottom: 24 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 18, marginBottom: 24 }}>
                                     <div>
                                         <label className="aj-label">Nama Lengkap</label>
                                         <div className="aj-input-wrap">
@@ -229,7 +300,7 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
                                         {errors.password && <p className="aj-error">{errors.password}</p>}
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: 12 }}>
+                                <div className="aj-form-actions" style={{ display: 'flex', gap: 12 }}>
                                     <button type="submit" className="aj-btn-primary" disabled={processing}>
                                         <IconCheck size={15} /> {processing ? 'Menyimpan...' : 'Buat Akun Juri'}
                                     </button>
@@ -243,7 +314,8 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
 
                     {/* Daftar juri */}
                     <div className="aj-glass anim-bottom delay-3" style={{ borderRadius: 22, overflow: 'hidden' }}>
-                        <div style={{ padding: '20px 24px 16px', borderBottom: '1.5px solid rgba(99,102,241,0.1)' }}>
+                        {/* List header */}
+                        <div className="aj-list-header" style={{ padding: '20px 24px 16px', borderBottom: '1.5px solid rgba(99,102,241,0.1)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6366F1', boxShadow: '0 0 8px rgba(99,102,241,0.6)' }} />
@@ -262,41 +334,55 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
                                 <p style={{ fontSize: 13 }}>Klik "+ Tambah Juri" untuk membuat akun juri pertama</p>
                             </div>
                         ) : (
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 540 }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '1.5px solid rgba(99,102,241,0.1)', background: 'rgba(99,102,241,0.03)' }}>
-                                            {['Juri', 'Email', 'Bergabung', 'Aksi'].map(h => (
-                                                <th key={h} style={{ padding: '13px 20px', textAlign: 'left', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#0B3A6A', fontFamily: "'Montserrat',sans-serif" }}>{h}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {juri_users.map((j, idx) => (
-                                            <tr key={j.id} className="aj-row" style={{ borderBottom: idx < juri_users.length - 1 ? '1px solid rgba(99,102,241,0.07)' : 'none', transition: 'background .2s ease' }}>
-                                                <td style={{ padding: '14px 20px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                        <JuriAvatar name={j.name} />
-                                                        <div>
-                                                            <p style={{ fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat',sans-serif", fontSize: 13 }}>{j.name}</p>
-                                                            <p style={{ fontSize: 10, color: '#6366F1', fontWeight: 600, fontFamily: "'Montserrat',sans-serif", letterSpacing: '.08em' }}>JURI</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '14px 20px', color: '#4A6A8A', fontSize: 13 }}>{j.email}</td>
-                                                <td style={{ padding: '14px 20px', color: '#7A9AB8', fontSize: 12, fontFamily: "'Montserrat',sans-serif" }}>
-                                                    {new Date(j.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                </td>
-                                                <td style={{ padding: '14px 20px' }}>
-                                                    <button className="aj-delete-btn" onClick={() => hapusJuri(j.id, j.name)} title="Hapus juri">
-                                                        <IconTrash size={16} />
-                                                    </button>
-                                                </td>
+                            <>
+                                {/* Desktop table */}
+                                <div className="aj-desktop-table" style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 540 }}>
+                                        <thead>
+                                            <tr style={{ borderBottom: '1.5px solid rgba(99,102,241,0.1)', background: 'rgba(99,102,241,0.03)' }}>
+                                                {['Juri', 'Email', 'Bergabung', 'Aksi'].map(h => (
+                                                    <th key={h} style={{ padding: '13px 20px', textAlign: 'left', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#0B3A6A', fontFamily: "'Montserrat',sans-serif" }}>{h}</th>
+                                                ))}
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody>
+                                            {juri_users.map((j, idx) => (
+                                                <tr key={j.id} className="aj-row" style={{ borderBottom: idx < juri_users.length - 1 ? '1px solid rgba(99,102,241,0.07)' : 'none', transition: 'background .2s ease' }}>
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                            <JuriAvatar name={j.name} />
+                                                            <div>
+                                                                <p style={{ fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat',sans-serif", fontSize: 13 }}>{j.name}</p>
+                                                                <p style={{ fontSize: 10, color: '#6366F1', fontWeight: 600, fontFamily: "'Montserrat',sans-serif", letterSpacing: '.08em' }}>JURI</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '14px 20px', color: '#4A6A8A', fontSize: 13 }}>{j.email}</td>
+                                                    <td style={{ padding: '14px 20px', color: '#7A9AB8', fontSize: 12, fontFamily: "'Montserrat',sans-serif" }}>
+                                                        {new Date(j.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                    </td>
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        <button className="aj-delete-btn" onClick={() => hapusJuri(j.id, j.name)} title="Hapus juri">
+                                                            <IconTrash size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile cards */}
+                                <div className="aj-mobile-list">
+                                    {juri_users.map(j => (
+                                        <JuriMobileCard
+                                            key={j.id}
+                                            j={j}
+                                            onDelete={() => hapusJuri(j.id, j.name)}
+                                        />
+                                    ))}
+                                </div>
+                            </>
                         )}
                     </div>
 

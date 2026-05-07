@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Design;
 use App\Models\Score;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,12 +13,13 @@ class JuriController extends Controller
 {
     private function authData(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         return [
             'auth' => [
                 'user' => [
+                    'id'    => $user->id,
                     'name'  => $user->name,
                     'email' => $user->email,
                     'role'  => $user->role,
@@ -28,7 +30,9 @@ class JuriController extends Controller
 
     public function dashboard(): Response
     {
-        $juriId = (int) Auth::id();
+        /** @var User $user */
+        $user   = Auth::user();
+        $juriId = (int) $user->id;
 
         return Inertia::render('Juri/Dashboard', array_merge($this->authData(), [
             'total_dinilai'       => Score::where('juri_id', $juriId)->count(),
@@ -45,26 +49,76 @@ class JuriController extends Controller
 
     public function designs(): Response
     {
-        $juriId = (int) Auth::id();
+        /** @var User $user */
+        $user    = Auth::user();
+        $designs = Design::with(['user', 'scores'])->get();
 
-        return Inertia::render('Juri/Designs', array_merge($this->authData(), [
-            'designs' => Design::with([
-                'user',
-                'event',
-                'scores' => fn ($q) => $q->where('juri_id', $juriId),
-            ])->latest()->get(),
-        ]));
+        return Inertia::render('Juri/Designs', [
+            'auth'    => [
+                'user' => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                    'role'  => $user->role,
+                ],
+            ],
+            'designs' => $designs->map(fn($d) => [
+                'id'        => $d->id,
+                'judul'     => $d->judul,
+                'file_path' => $d->file_path,
+                'user'      => $d->user ? ['name' => $d->user->name] : null,
+                'scores'    => $d->scores->map(fn($s) => [
+                    'id'        => $s->id,
+                    'juri_id'   => $s->juri_id,
+                    'rata_rata' => $s->rata_rata,
+                ]),
+            ]),
+        ]);
     }
 
-    public function showDesign(Design $design): Response
+    public function showDesign(int $design): Response
     {
-        $juriId = (int) Auth::id();
+        /** @var User $user */
+        $user      = Auth::user();
+        $juriId    = (int) $user->id;
+        $design    = Design::with(['user', 'event', 'scores'])->findOrFail($design);
 
-        return Inertia::render('Juri/ScoreDesign', array_merge($this->authData(), [
-            'design'        => $design->load(['user', 'event']),
-            'existingScore' => Score::where('design_id', $design->id)
-                ->where('juri_id', $juriId)
-                ->first(),
-        ]));
+        $existingScore  = $design->scores->firstWhere('juri_id', $juriId);
+        $otherJuriScore = $design->scores->first(fn($s) => $s->juri_id !== $juriId);
+
+        return Inertia::render('Juri/ScoreDesign', [
+            'auth'           => [
+                'user' => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                    'role'  => $user->role,
+                ],
+            ],
+            'design'         => [
+                'id'        => $design->id,
+                'judul'     => $design->judul,
+                'file_path' => $design->file_path,
+                'deskripsi' => $design->deskripsi,
+                'user'      => $design->user ? ['name' => $design->user->name] : null,
+                'event'     => $design->event ? ['nama' => $design->event->nama] : null,
+            ],
+            'existingScore'  => $existingScore ? [
+                'tema'        => $existingScore->tema,
+                'kreativitas' => $existingScore->kreativitas,
+                'estetik'     => $existingScore->estetik,
+                'teknik'      => $existingScore->teknik,
+                'catatan'     => $existingScore->catatan,
+                'juri_id'     => $existingScore->juri_id,
+            ] : null,
+            'otherJuriScore' => $otherJuriScore ? [
+                'tema'        => $otherJuriScore->tema,
+                'kreativitas' => $otherJuriScore->kreativitas,
+                'estetik'     => $otherJuriScore->estetik,
+                'teknik'      => $otherJuriScore->teknik,
+                'catatan'     => $otherJuriScore->catatan,
+                'juri_id'     => $otherJuriScore->juri_id,
+            ] : null,
+        ]);
     }
 }

@@ -77,6 +77,117 @@ const STYLES = `
     .modal-box { animation:modal-in .3s cubic-bezier(.34,1.2,.64,1) both; max-width:880px; width:100%; cursor:default; position:relative; border-radius:22px; overflow:hidden; box-shadow:0 32px 100px rgba(0,0,0,0.6); }
     .modal-close { position:absolute; top:14px; right:14px; z-index:10; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.25); backdrop-filter:blur(8px); cursor:pointer; color:#fff; display:flex; align-items:center; justify-content:center; transition:all .18s ease; }
     .modal-close:hover { background:rgba(255,255,255,0.28); transform:scale(1.1); }
+
+    /* ══════════════════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════════════════ */
+
+    /* Main content wrapper transition */
+    .lb-main-content {
+        transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Mobile spacer for bottom nav / top bar */
+    .lb-mobile-spacer { display: none; }
+
+    @media (max-width: 768px) {
+        /* Reset margin so content fills full width */
+        .lb-main-content {
+            margin-left: 0 !important;
+            padding-bottom: 80px !important;
+        }
+
+        /* Show spacer */
+        .lb-mobile-spacer {
+            display: block;
+            height: 56px;
+        }
+
+        /* Top bar: hide on mobile (sidebar handles nav) */
+        .lb-topbar {
+            display: none !important;
+        }
+
+        /* Content padding tighter */
+        .lb-content-pad {
+            padding: 20px 16px !important;
+        }
+
+        /* Podium: scale down */
+        .lb-podium-wrap {
+            padding: 20px 14px !important;
+        }
+
+        /* Podium images smaller */
+        .podium-card:hover {
+            transform: none;
+        }
+
+        /* Table: horizontal scroll */
+        .lb-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .lb-table-wrap table {
+            min-width: 640px;
+        }
+
+        /* Mobile rank cards — show instead of table on small screens */
+        .lb-rank-cards { display: flex !important; }
+        .lb-table-section { display: none !important; }
+
+        /* Heading font size */
+        .lb-heading { font-size: clamp(22px, 5vw, 32px) !important; }
+    }
+
+    @media (max-width: 480px) {
+        /* Podium: 3-column stays but smaller gap */
+        .lb-podium-inner {
+            gap: 8px !important;
+        }
+    }
+
+    /* ── Mobile rank card list ── */
+    .lb-rank-cards {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 0;
+    }
+    .lb-rank-card {
+        background: rgba(255,255,255,0.80);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(255,255,255,0.88);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 14px rgba(11,31,58,0.07);
+        display: flex;
+        align-items: stretch;
+    }
+    .lb-rank-card-accent {
+        width: 5px;
+        flex-shrink: 0;
+    }
+    .lb-rank-card-body {
+        flex: 1;
+        padding: 14px 14px 14px 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .lb-rank-card-scores {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .lb-rank-score-pill {
+        background: rgba(14,165,233,0.07);
+        border: 1px solid rgba(14,165,233,0.15);
+        border-radius: 10px;
+        padding: 6px 8px;
+        text-align: center;
+    }
 `;
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -106,7 +217,7 @@ function ImageModal({ item, onClose }: { item: PreviewItem; onClose: () => void 
             <div className="modal-box" onClick={e => e.stopPropagation()}>
                 <button className="modal-close" onClick={onClose}><IconX size={16} /></button>
                 <img src={item.src} alt={item.judul} style={{ width: '100%', maxHeight: '72vh', objectFit: 'contain', display: 'block', background: '#0a1628' }} />
-                <div style={{ background: 'rgba(8,24,46,0.94)', backdropFilter: 'blur(12px)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <div style={{ background: 'rgba(8,24,46,0.94)', backdropFilter: 'blur(12px)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                             <span style={{ fontSize: 20 }}>{MEDAL[item.rank - 1] ?? ''}</span>
@@ -120,6 +231,57 @@ function ImageModal({ item, onClose }: { item: PreviewItem; onClose: () => void 
                         <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 30, color: item.rank === 1 ? '#F59E0B' : c.text, lineHeight: 1 }}>{item.score}</p>
                         <p style={{ fontSize: 9, color: 'rgba(186,230,253,0.6)', fontWeight: 700, letterSpacing: '.1em', marginTop: 3 }}>RATA-RATA</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Mobile Rank Card ──────────────────────────────────────────────────────────
+function MobileRankCard({ item, onPreview }: { item: RankItem; onPreview: (item: RankItem) => void }) {
+    const c = mc(item.rank);
+    const isTop = item.rank <= 3;
+    return (
+        <div className="lb-rank-card anim-bottom">
+            <div className="lb-rank-card-accent" style={{ background: c.ring }} />
+            <div className="lb-rank-card-body">
+                {/* Rank badge */}
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: isTop ? c.ring : 'rgba(14,165,233,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isTop ? 15 : 12, fontWeight: 900, color: isTop ? '#fff' : '#1565C0', fontFamily: "'Montserrat',sans-serif", boxShadow: isTop ? `0 2px 10px ${c.glow}` : 'none', flexShrink: 0 }}>
+                    {isTop ? MEDAL[item.rank - 1] : item.rank}
+                </div>
+
+                {/* Thumbnail */}
+                <div className="img-trigger" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0 }} onClick={() => onPreview(item)}>
+                    <img src={`/storage/${item.file_path}`} alt={item.judul} style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', border: `2px solid ${c.ring}55`, display: 'block' }} />
+                    <div className="zoom-hint"><span style={{ fontSize: 14 }}>🔍</span></div>
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 13, color: '#0B1F3A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{item.judul}</p>
+                    <p style={{ fontSize: 11, color: '#4A6A8A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>{item.peserta}</p>
+
+                    {/* Score pills 2x2 */}
+                    <div className="lb-rank-card-scores">
+                        {[
+                            { label: 'Tema',    value: item.detail.tema },
+                            { label: 'Kreatif', value: item.detail.kreativitas },
+                            { label: 'Estetik', value: item.detail.estetik },
+                            { label: 'Teknik',  value: item.detail.teknik },
+                        ].map(s => (
+                            <div key={s.label} className="lb-rank-score-pill">
+                                <p style={{ fontSize: 9, color: '#6B8AAA', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</p>
+                                <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 15, color: '#1565C0', lineHeight: 1 }}>{s.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Rata-rata */}
+                <div style={{ flexShrink: 0, textAlign: 'center', marginLeft: 8 }}>
+                    <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 22, color: isTop ? c.text : '#1565C0', lineHeight: 1 }}>{item.nilai_rata_rata}</p>
+                    <ScoreBar value={(item.nilai_rata_rata / 100) * 100} rank={item.rank} />
+                    <p style={{ fontSize: 9, color: '#8AACCC', marginTop: 4, fontWeight: 600 }}>{item.jumlah_juri} juri</p>
                 </div>
             </div>
         </div>
@@ -179,10 +341,14 @@ export default function AdminLeaderboard({ auth, rankings, pendingUsers = 0 }: P
 
                 <AdminSidebar user={auth.user} activePage="leaderboard" pendingUsers={pendingUsers} onCollapse={setSidebarCollapsed} />
 
-                <div style={{ marginLeft: sidebarWidth, minHeight: '100vh', position: 'relative', zIndex: 1, transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)' }}>
+                {/* ── KEY FIX: marginLeft via CSS class ── */}
+                <div className="lb-main-content" style={{ marginLeft: sidebarWidth, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
 
-                    {/* Top Bar */}
-                    <div className="anim-top" style={{ position: 'sticky', top: 0, zIndex: 50, height: 62, background: 'rgba(14,100,180,0.55)', backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0 clamp(20px,4vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {/* Mobile spacer */}
+                    <div className="lb-mobile-spacer" />
+
+                    {/* Top Bar — hidden on mobile */}
+                    <div className="lb-topbar anim-top" style={{ position: 'sticky', top: 0, zIndex: 50, height: 62, background: 'rgba(14,100,180,0.55)', backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0 clamp(20px,4vw,40px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <Link href="/admin/dashboard" style={{ textDecoration: 'none', fontSize: 12, color: 'rgba(186,230,253,0.7)', fontFamily: "'Montserrat',sans-serif", fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                                 <IconLayoutDashboard size={13} /> Dashboard
@@ -204,12 +370,12 @@ export default function AdminLeaderboard({ auth, rankings, pendingUsers = 0 }: P
                     </div>
 
                     {/* Content */}
-                    <div style={{ padding: 'clamp(24px,4vw,40px)' }}>
+                    <div className="lb-content-pad" style={{ padding: 'clamp(24px,4vw,40px)' }}>
 
                         {/* Heading */}
                         <div className="anim-top delay-1" style={{ marginBottom: 32 }}>
                             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 8, fontFamily: "'Montserrat',sans-serif" }}>— PAPAN PERINGKAT —</p>
-                            <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 'clamp(24px,3.5vw,38px)', color: '#08182E', lineHeight: 1.2, marginBottom: 10 }}>
+                            <h2 className="lb-heading" style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 'clamp(24px,3.5vw,38px)', color: '#08182E', lineHeight: 1.2, marginBottom: 10 }}>
                                 Top <span className="lb-gradient-text">Leaderboard</span> <span className="crown">🏆</span>
                             </h2>
                             <p style={{ color: '#1A3A5C', fontSize: 14 }}>Klik gambar untuk preview · Ranking berdasarkan rata-rata penilaian semua juri</p>
@@ -223,32 +389,32 @@ export default function AdminLeaderboard({ auth, rankings, pendingUsers = 0 }: P
                             </div>
                         ) : (
                             <>
-                                {/* Podium */}
+                                {/* ── PODIUM ── */}
                                 {top3.length > 0 && (
-                                    <div className="anim-bottom delay-2" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 24, padding: 'clamp(24px,3vw,40px)', boxShadow: '0 6px 24px rgba(11,31,58,0.07)', marginBottom: 24, overflow: 'hidden', position: 'relative' }}>
+                                    <div className="anim-bottom delay-2" style={{ background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 24, padding: 'clamp(20px,3vw,40px)', boxShadow: '0 6px 24px rgba(11,31,58,0.07)', marginBottom: 24, overflow: 'hidden', position: 'relative' }}>
                                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(180deg,transparent,rgba(14,165,233,0.05))', pointerEvents: 'none' }} />
                                         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase', color: '#1565C0', fontFamily: "'Montserrat',sans-serif", textAlign: 'center', marginBottom: 32 }}>— 🥇 TOP 3 TERBAIK —</p>
-                                        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 'clamp(12px,3vw,32px)' }}>
+                                        <div className="lb-podium-inner" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 'clamp(8px,3vw,32px)' }}>
                                             {podiumOrder.map((item, idx) => {
                                                 const c = mc(item.rank);
                                                 const isFirst = item.rank === 1;
-                                                const imgSize = isFirst ? 96 : 72;
+                                                const imgSize = isFirst ? 80 : 60;
                                                 const podiumH = item.rank === 1 ? 100 : item.rank === 2 ? 72 : 56;
                                                 return (
                                                     <div key={item.id} className={`podium-card podium-anim pod-${idx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                                                        <span style={{ fontSize: isFirst ? 32 : 24 }}>{MEDAL[item.rank - 1]}</span>
-                                                        <div className="img-trigger" style={{ position: 'relative', borderRadius: isFirst ? 20 : 16 }} onClick={() => openPreview(item)}>
-                                                            <img src={`/storage/${item.file_path}`} alt={item.judul} style={{ width: imgSize, height: imgSize, borderRadius: isFirst ? 20 : 16, objectFit: 'cover', border: `3px solid ${c.ring}`, boxShadow: `0 8px 28px ${c.glow}`, display: 'block', animation: isFirst ? 'float-glow 3s ease-in-out infinite' : 'none' }} />
+                                                        <span style={{ fontSize: isFirst ? 28 : 20 }}>{MEDAL[item.rank - 1]}</span>
+                                                        <div className="img-trigger" style={{ position: 'relative', borderRadius: isFirst ? 18 : 14 }} onClick={() => openPreview(item)}>
+                                                            <img src={`/storage/${item.file_path}`} alt={item.judul} style={{ width: imgSize, height: imgSize, borderRadius: isFirst ? 18 : 14, objectFit: 'cover', border: `3px solid ${c.ring}`, boxShadow: `0 8px 28px ${c.glow}`, display: 'block', animation: isFirst ? 'float-glow 3s ease-in-out infinite' : 'none' }} />
                                                             <div className="zoom-hint"><span>🔍</span></div>
-                                                            <div style={{ position: 'absolute', bottom: -8, right: -8, width: 28, height: 28, borderRadius: '50%', background: c.ring, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, fontFamily: "'Montserrat',sans-serif", border: '2px solid #fff', boxShadow: `0 2px 8px ${c.glow}` }}>{item.rank}</div>
+                                                            <div style={{ position: 'absolute', bottom: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: c.ring, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, fontFamily: "'Montserrat',sans-serif", border: '2px solid #fff', boxShadow: `0 2px 8px ${c.glow}` }}>{item.rank}</div>
                                                         </div>
-                                                        <div style={{ textAlign: 'center', maxWidth: 130 }}>
-                                                            <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: isFirst ? 14 : 12, color: '#0B1F3A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{item.peserta}</p>
-                                                            <p style={{ fontSize: 10, color: '#4A6A8A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>{item.judul}</p>
-                                                            <div style={{ display: 'inline-block', background: c.badge, color: c.text, border: `1.5px solid ${c.ring}44`, borderRadius: 12, padding: isFirst ? '8px 20px' : '6px 16px', fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: isFirst ? 26 : 20 }}>{item.nilai_rata_rata}</div>
+                                                        <div style={{ textAlign: 'center', maxWidth: 110 }}>
+                                                            <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: isFirst ? 13 : 11, color: '#0B1F3A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{item.peserta}</p>
+                                                            <p style={{ fontSize: 9, color: '#4A6A8A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>{item.judul}</p>
+                                                            <div style={{ display: 'inline-block', background: c.badge, color: c.text, border: `1.5px solid ${c.ring}44`, borderRadius: 12, padding: isFirst ? '7px 16px' : '5px 12px', fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: isFirst ? 22 : 17 }}>{item.nilai_rata_rata}</div>
                                                         </div>
-                                                        <div style={{ width: isFirst ? 90 : 72, height: podiumH, background: `linear-gradient(180deg,${c.ring},${c.ring}bb)`, borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 10, boxShadow: `0 -4px 16px ${c.glow}` }}>
-                                                            <span style={{ fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.85)', fontFamily: "'Montserrat',sans-serif" }}>#{item.rank}</span>
+                                                        <div style={{ width: isFirst ? 80 : 62, height: podiumH, background: `linear-gradient(180deg,${c.ring},${c.ring}bb)`, borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 10, boxShadow: `0 -4px 16px ${c.glow}` }}>
+                                                            <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.85)', fontFamily: "'Montserrat',sans-serif" }}>#{item.rank}</span>
                                                         </div>
                                                     </div>
                                                 );
@@ -257,15 +423,22 @@ export default function AdminLeaderboard({ auth, rankings, pendingUsers = 0 }: P
                                     </div>
                                 )}
 
-                                {/* Tabel */}
-                                <div className="anim-bottom delay-3" style={{ background: 'rgba(255,255,255,0.74)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 6px 24px rgba(11,31,58,0.07)' }}>
+                                {/* ── MOBILE: rank cards (shown on mobile, hidden on desktop) ── */}
+                                <div className="lb-rank-cards anim-bottom delay-3">
+                                    {rankings.map(item => (
+                                        <MobileRankCard key={item.id} item={item} onPreview={openPreview} />
+                                    ))}
+                                </div>
+
+                                {/* ── DESKTOP: Tabel (hidden on mobile) ── */}
+                                <div className="lb-table-section anim-bottom delay-3" style={{ background: 'rgba(255,255,255,0.74)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,0.88)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 6px 24px rgba(11,31,58,0.07)' }}>
                                     <div style={{ padding: '18px 24px', borderBottom: '1.5px solid rgba(14,165,233,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <p style={{ fontSize: 11, fontWeight: 700, color: '#0EA5E9', letterSpacing: '.15em', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif", display: 'flex', alignItems: 'center', gap: 7 }}>
                                             <IconListNumbers size={15} /> — SEMUA PERINGKAT —
                                         </p>
                                         <p style={{ fontSize: 11, color: '#4A6A8A', fontFamily: "'Montserrat',sans-serif", fontWeight: 600 }}>{rankings.length} peserta</p>
                                     </div>
-                                    <div style={{ overflowX: 'auto' }}>
+                                    <div className="lb-table-wrap" style={{ overflowX: 'auto' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                             <thead>
                                                 <tr style={{ background: 'rgba(8,28,58,0.04)', borderBottom: '1.5px solid rgba(14,165,233,0.1)' }}>

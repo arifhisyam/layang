@@ -123,6 +123,70 @@ const STYLES = `
     max-width: 400px; width: 100%;
     animation: modalIn 0.3s cubic-bezier(0.34,1.4,0.64,1) both;
   }
+
+  /* ── MOBILE RESPONSIVE ── */
+  .addes-main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Mobile spacer for bottom nav */
+  .addes-mobile-spacer { display: none; }
+
+  @media (max-width: 768px) {
+    /* Reset margin so main content fills screen */
+    .addes-main-content {
+      margin-left: 0 !important;
+      padding-bottom: 80px !important;
+    }
+
+    /* Show mobile bottom spacer */
+    .addes-mobile-spacer {
+      display: block;
+      height: 56px;
+    }
+
+    /* Header adjustments */
+    .addes-header-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 16px !important;
+    }
+
+    /* Mini stats: horizontal scroll row */
+    .addes-mini-stats {
+      width: 100%;
+      overflow-x: auto;
+      display: flex !important;
+      gap: 10px !important;
+      padding-bottom: 4px;
+    }
+    .addes-mini-stats > div {
+      flex-shrink: 0;
+      min-width: 90px;
+    }
+
+    /* Card grid: 1 column on mobile */
+    .addes-card-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Cards on mobile: no hover lift (prevents sticky hover on touch) */
+    .addes-card:hover {
+      transform: none;
+      box-shadow: 0 4px 18px rgba(11,31,58,0.07);
+    }
+
+    /* Padding adjustments */
+    .addes-content-pad {
+      padding: 20px 16px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .addes-modal {
+      padding: 24px 18px 20px;
+    }
+  }
 `;
 
 // ─── MODAL KONFIRMASI HAPUS ────────────────────────────────
@@ -211,45 +275,52 @@ export default function AdminDesigns({ auth, designs, pending_count = 0 }: Props
 
             <AdminSidebar user={auth.user} activePage="designs" pendingUsers={pending_count} onCollapse={setSidebarCollapsed} />
 
-            <div style={{
-                marginLeft: sidebarWidth, flex: 1,
-                background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
-                minHeight: '100vh', position: 'relative',
-                transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}>
+            {/* ── KEY FIX: margin-left controlled via CSS class, bukan inline style ── */}
+            <div
+                className="addes-main-content"
+                style={{
+                    marginLeft: sidebarWidth,
+                    flex: 1,
+                    background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
+                    minHeight: '100vh',
+                    position: 'relative',
+                }}
+            >
+                {/* Mobile top spacer (untuk sidebar mobile yang jadi top bar) */}
+                <div className="addes-mobile-spacer" />
+
                 {/* Orbs */}
                 <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', width: 500, height: 500, top: -150, right: -80, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.12) 0%,transparent 65%)', animation: 'orb-drift-ad 26s ease-in-out infinite' }} />
                     <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(11,31,58,0.06) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
                 </div>
 
-                <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(32px,4vw,48px) clamp(20px,4vw,40px)', position: 'relative', zIndex: 1 }}>
+                <div className="addes-content-pad" style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(32px,4vw,48px) clamp(20px,4vw,40px)', position: 'relative', zIndex: 1 }}>
 
-                    
-
-                    {/* Header */}
-                    <div className="anim-top delay-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32 }}>
+                    {/* ── HEADER ── */}
+                    <div className="addes-header-row anim-top delay-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+                        {/* Judul */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <div className="anim-pop delay-1" style={{ width: 48, height: 48, borderRadius: 16, background: 'linear-gradient(135deg,#0EA5E9,#1565C0)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(14,165,233,0.35)', flexShrink: 0 }}>
                                 <IconPhoto size={22} color="#fff" />
                             </div>
                             <div>
                                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 4, fontFamily: "'Montserrat',sans-serif" }}>— KONTEN —</p>
-                                <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(22px,3vw,32px)', color: '#08182E', lineHeight: 1.2 }}>
+                                <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(20px,3vw,32px)', color: '#08182E', lineHeight: 1.2 }}>
                                     Semua <span style={{ color: '#0EA5E9' }}>Desain</span>
                                 </h1>
                                 <p style={{ fontSize: 13, color: '#1A3A5C', marginTop: 4 }}>Pantau semua karya peserta kompetisi</p>
                             </div>
                         </div>
 
-                        {/* Mini stats */}
-                        <div style={{ display: 'flex', gap: 12 }}>
+                        {/* Mini stats — scrollable on mobile */}
+                        <div className="addes-mini-stats" style={{ display: 'flex', gap: 12 }}>
                             {[
                                 { value: designs.length, label: 'Total',   color: '#0EA5E9', icon: <IconPhoto size={16} color="#0EA5E9" />, idx: 0 },
                                 { value: dinilai,         label: 'Dinilai', color: '#059669', icon: <IconCircleCheck size={16} color="#059669" />, idx: 1 },
                                 { value: pending,         label: 'Pending', color: '#D97706', icon: <IconClock size={16} color="#D97706" />, idx: 2 },
                             ].map(s => (
-                                <div key={s.label} className={`addes-glass anim-right stat-${s.idx}`} style={{ borderRadius: 14, padding: '12px 18px', textAlign: 'center' }}>
+                                <div key={s.label} className={`addes-glass anim-right stat-${s.idx}`} style={{ borderRadius: 14, padding: '12px 18px', textAlign: 'center', flexShrink: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>{s.icon}</div>
                                     <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 22, color: s.color, lineHeight: 1 }}>{s.value}</p>
                                     <p style={{ fontSize: 9.5, fontWeight: 700, color: '#1A3A5C', letterSpacing: '.1em', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif", marginTop: 4 }}>{s.label}</p>
@@ -258,7 +329,7 @@ export default function AdminDesigns({ auth, designs, pending_count = 0 }: Props
                         </div>
                     </div>
 
-                    {/* Grid desain */}
+                    {/* ── GRID DESAIN ── */}
                     {designs.length === 0 ? (
                         <div className="addes-glass anim-bottom delay-2" style={{ borderRadius: 22, textAlign: 'center', padding: '80px 0' }}>
                             <IconPhoto size={52} color="rgba(14,165,233,0.3)" style={{ margin: '0 auto 16px' }} />
@@ -266,7 +337,7 @@ export default function AdminDesigns({ auth, designs, pending_count = 0 }: Props
                             <p style={{ fontSize: 13, color: '#4A6A8A' }}>Desain peserta akan muncul di sini setelah diupload</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 'clamp(14px,2vw,22px)' }}>
+                        <div className="addes-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 'clamp(14px,2vw,22px)' }}>
                             {designs.map((d, idx) => {
                                 const isDinilai = (d.scores?.length ?? 0) > 0;
                                 const dir = idx % 2 === 0 ? 'anim-left' : 'anim-right';

@@ -212,7 +212,6 @@ const SIDEBAR_STYLES = `
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     z-index: 98; backdrop-filter: blur(2px);
   }
-  .as-mobile-overlay.open { display: block; }
 
   /* ── Mobile menu drawer ── */
   .as-mobile-drawer {
@@ -223,11 +222,8 @@ const SIDEBAR_STYLES = `
     -webkit-backdrop-filter: blur(32px) saturate(180%);
     border-right: 1px solid rgba(255,255,255,0.1);
     z-index: 99; flex-direction: column;
-    overflow-y: auto;
-  }
-  .as-mobile-drawer.open {
-    display: flex;
     animation: slide-in-left .25s cubic-bezier(0.4,0,0.2,1) both;
+    overflow-y: auto;
   }
 
   /* ── Mobile top bar ── */
@@ -251,6 +247,11 @@ const SIDEBAR_STYLES = `
   @media (max-width: 768px) {
     .as-sidebar { display: none !important; }
     .as-mobile-topbar { display: flex; }
+    .as-mobile-overlay.open { display: block; }
+    .as-mobile-drawer.open { 
+         display: flex; 
+         animation: slide-in-left .25s cubic-bezier(0.4,0,0.2,1) both; 
+     }
   }
 `;
 
@@ -492,15 +493,14 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
         },
     ];
 
-    // ── Desktop sidebar content ───────────────────────────────────────────────
-    const desktopContent = () => (
+    const sidebarContent = (isMobileDrawer = false) => (
         <>
             {/* ── Logo ── */}
             <div style={{
-                padding: collapsed ? '28px 15px 22px' : '28px 24px 22px',
+                padding: (!isMobileDrawer && collapsed) ? '28px 15px 22px' : '28px 24px 22px',
                 borderBottom: '1px solid rgba(255,255,255,0.08)',
                 display: 'flex', alignItems: 'center',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                justifyContent: (!isMobileDrawer && collapsed) ? 'center' : 'flex-start',
                 gap: 12, overflow: 'hidden',
                 transition: 'padding 0.28s cubic-bezier(0.4,0,0.2,1)',
             }}>
@@ -515,7 +515,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                     }}>
                         <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
-                    {!collapsed && (
+                    {(!collapsed || isMobileDrawer) && (
                         <div>
                             <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
                                 Layang-Layang
@@ -535,7 +535,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                     display: 'inline-block', boxShadow: '0 0 8px rgba(52,211,153,0.8)',
                     animation: 'blink-dot 2s ease-in-out infinite', flexShrink: 0,
                 }} />
-                {!collapsed && (
+                {(!collapsed || isMobileDrawer) && (
                     <span className="as-live-label">LIVE · Kompetisi 2026</span>
                 )}
             </div>
@@ -550,6 +550,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                         {group.items.map(item => {
                             const isActive = activePage === item.key;
                             const hasBadge = !isActive && item.badge !== undefined && item.badge > 0;
+                            const isCollapsed = isMobileDrawer ? false : collapsed;
 
                             return (
                                 <Link
@@ -563,7 +564,8 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                                         transition: 'color .2s', position: 'relative',
                                     }}>
                                         {item.icon}
-                                        {hasBadge && collapsed && (
+
+                                        {hasBadge && isCollapsed && (
                                             <span style={{
                                                 position: 'absolute', top: -4, right: -5,
                                                 width: 8, height: 8, borderRadius: '50%',
@@ -581,14 +583,14 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                                             fontWeight: 700, fontSize: 12.5,
                                             color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
                                             letterSpacing: '.03em',
-                                            maxWidth: collapsed ? 0 : 160,
+                                            maxWidth: isCollapsed ? 0 : 160,
                                             transition: 'color .2s', flex: 1,
                                         }}
                                     >
                                         {item.label}
                                     </span>
 
-                                    {isActive && !collapsed && (
+                                    {isActive && !isCollapsed && (
                                         <div style={{
                                             marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
                                             background: '#0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.8)',
@@ -596,7 +598,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                                         }} />
                                     )}
 
-                                    {hasBadge && !collapsed && (
+                                    {hasBadge && !isCollapsed && (
                                         <span style={{
                                             marginLeft: 'auto', background: '#EF4444', color: '#fff',
                                             borderRadius: '50%', width: 18, height: 18,
@@ -610,7 +612,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                                         </span>
                                     )}
 
-                                    {collapsed && <span className="as-tooltip">{item.label}</span>}
+                                    {isCollapsed && <span className="as-tooltip">{item.label}</span>}
                                 </Link>
                             );
                         })}
@@ -620,139 +622,7 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
 
             {/* ── Profile ── */}
             <div style={{ padding: '10px 12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <ProfileDropdown user={user} collapsed={collapsed} />
-            </div>
-        </>
-    );
-
-    // ── Mobile drawer content (matches PesertaSidebar exactly) ───────────────
-    const mobileDrawerContent = () => (
-        <>
-            {/* ── Logo ── */}
-            <div style={{
-                padding: '28px 24px 22px',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: 12, overflow: 'hidden',
-            }}>
-                <div style={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #0EA5E9, #1565C0)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 0 20px rgba(14,165,233,0.6)',
-                    animation: 'float-slow 4s ease-in-out infinite', flexShrink: 0,
-                    overflow: 'hidden', padding: 6,
-                }}>
-                    <img src="/images/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
-                <div>
-                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
-                        Layang-Layang
-                    </p>
-                    <p style={{ fontSize: 9, color: '#BAE6FD', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-                        PANEL ADMIN
-                    </p>
-                </div>
-            </div>
-
-            {/* ── Live status (same structure as PesertaSidebar) ── */}
-            <div style={{
-                padding: '14px 24px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: 8,
-            }}>
-                <span style={{
-                    width: 7, height: 7, borderRadius: '50%', background: '#34D399',
-                    display: 'inline-block', boxShadow: '0 0 8px rgba(52,211,153,0.8)',
-                    animation: 'blink-dot 2s ease-in-out infinite',
-                    flexShrink: 0,
-                }} />
-                <span style={{ fontSize: 11, color: 'rgba(186,230,253,0.7)', fontWeight: 600, letterSpacing: '.1em' }}>
-                    LIVE · Kompetisi 2026
-                </span>
-            </div>
-
-            {/* ── Nav ── */}
-            <nav className="as-nav" style={{ padding: '10px 12px' }}>
-                <p style={{
-                    fontSize: '8.5px', fontWeight: 700, color: 'rgba(186,230,253,0.35)',
-                    letterSpacing: '.18em', textTransform: 'uppercase',
-                    padding: '14px 16px 6px',
-                    fontFamily: "'Montserrat', sans-serif",
-                }}>
-                    Menu Admin
-                </p>
-
-                {navGroups.map((group, gi) => (
-                    <div key={group.label}>
-                        {gi > 0 && (
-                            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '8px 0' }} />
-                        )}
-
-                        {group.items.map(item => {
-                            const isActive = activePage === item.key;
-                            const hasBadge = !isActive && item.badge !== undefined && item.badge > 0;
-
-                            return (
-                                <Link
-                                    key={item.key}
-                                    href={item.href}
-                                    className={`as-nav-item${isActive ? ' active' : ''}`}
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    <span style={{
-                                        flexShrink: 0, display: 'flex', alignItems: 'center',
-                                        color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
-                                        transition: 'color .2s',
-                                    }}>
-                                        {item.icon}
-                                    </span>
-
-                                    <span style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontWeight: 700, fontSize: 12.5,
-                                        color: isActive ? '#fff' : 'rgba(186,230,253,0.72)',
-                                        letterSpacing: '.03em',
-                                        flex: 1,
-                                        overflow: 'hidden', whiteSpace: 'nowrap',
-                                    }}>
-                                        {item.label}
-                                    </span>
-
-                                    {isActive && (
-                                        <div style={{
-                                            marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
-                                            background: '#0EA5E9', boxShadow: '0 0 8px rgba(14,165,233,0.8)',
-                                            flexShrink: 0,
-                                        }} />
-                                    )}
-
-                                    {hasBadge && (
-                                        <span style={{
-                                            marginLeft: 'auto', background: '#EF4444', color: '#fff',
-                                            borderRadius: '50%', width: 18, height: 18,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: 9, fontWeight: 900,
-                                            boxShadow: '0 0 10px rgba(239,68,68,0.6)',
-                                            animation: 'blink-dot 2s ease-in-out infinite',
-                                            flexShrink: 0,
-                                        }}>
-                                            {item.badge! > 9 ? '9+' : item.badge}
-                                        </span>
-                                    )}
-                                </Link>
-                            );
-                        })}
-                    </div>
-                ))}
-            </nav>
-
-            {/* ── Profile ── */}
-            <div style={{ padding: '10px 12px 14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <ProfileDropdown user={user} collapsed={false} />
+                <ProfileDropdown user={user} collapsed={isMobileDrawer ? false : collapsed} />
             </div>
         </>
     );
@@ -762,18 +632,6 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
             <style>{SIDEBAR_STYLES}</style>
 
             {/* ══ DESKTOP SIDEBAR ══ */}
-
-            const [isMobile, setIsMobile] = useState(false);
-
-            useEffect(() => {
-                const check = () => setIsMobile(window.innerWidth <= 768);
-                check();
-                window.addEventListener('resize', check);
-                return () => window.removeEventListener('resize', check);
-            }, []);
-
-            {!isMobile() && (
-
             <div
                 className={`as-sidebar${collapsed ? ' collapsed' : ''}`}
                 style={{ width: collapsed ? W_COL : W_EXP }}
@@ -789,9 +647,9 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
                     }
                 </button>
 
-                {desktopContent()}
+                {sidebarContent(false)}
             </div>
-            )}
+
             {/* ══ MOBILE TOP BAR ══ */}
             <div className="as-mobile-topbar">
                 <div className="as-hamburger" onClick={() => setMobileOpen(o => !o)}>
@@ -829,8 +687,9 @@ export default function AdminSidebar({ user, activePage = 'dashboard', pendingUs
 
             {/* ══ MOBILE DRAWER ══ */}
             <div className={`as-mobile-drawer${mobileOpen ? ' open' : ''}`}>
-                {mobileDrawerContent()}
+                {sidebarContent(true)}
             </div>
         </>
     );
 }
+

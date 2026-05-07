@@ -100,6 +100,41 @@ const STYLES = `
     font-size: 10px; font-weight: 700;
     font-family: 'Montserrat',sans-serif; letter-spacing: .1em;
   }
+
+  /* ── MOBILE: reset margin-left agar sidebar tidak mendorong konten ── */
+  .adm-main { transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1); }
+
+  @media (max-width: 768px) {
+    .adm-main { margin-left: 0 !important; padding-bottom: 80px !important; }
+    .adm-mobile-spacer { height: 56px; }
+
+    /* Stat grid: 2 kolom di mobile */
+    .adm-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Bottom grid: 1 kolom penuh di mobile */
+    .adm-bottom-grid { grid-template-columns: 1fr !important; }
+    .adm-bottom-grid > div { grid-column: span 1 !important; }
+
+    /* Notif banner lebih kompak */
+    .adm-notif-banner { flex-wrap: wrap; gap: 10px; padding: 14px 16px; }
+
+    /* Header lebih kecil */
+    .adm-header-title { font-size: 20px !important; }
+
+    /* Tabel: bisa scroll horizontal */
+    .adm-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .adm-table-wrap table { min-width: 420px; }
+
+    /* Stat card padding lebih kecil */
+    .adm-stat-card { padding: 16px !important; }
+    .adm-stat-card .stat-icon { width: 44px !important; height: 44px !important; }
+    .adm-stat-card .stat-value { font-size: 26px !important; }
+  }
+
+  @media (max-width: 480px) {
+    .adm-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .adm-notif-badge { display: none; }
+  }
 `;
 
 // ─── SUB COMPONENTS ────────────────────────────────────────
@@ -108,20 +143,32 @@ function StatCard({ icon, label, value, color, glowColor, statIdx }: {
     color: string; glowColor?: string; statIdx: number;
 }) {
     return (
-        <div className={`adm-glass adm-stat-card anim-right stat-${statIdx}`}
-            style={{ borderRadius: 22, padding: 'clamp(18px,2.5vw,26px)', display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{
-                width: 54, height: 54, borderRadius: 16, flexShrink: 0,
-                background: `${color}14`, border: `1.5px solid ${color}28`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>{icon}</div>
+        <div
+            className={`adm-glass adm-stat-card anim-right stat-${statIdx}`}
+            style={{ borderRadius: 22, padding: 'clamp(18px,2.5vw,26px)', display: 'flex', alignItems: 'center', gap: 16 }}
+        >
+            <div
+                className="stat-icon"
+                style={{
+                    width: 54, height: 54, borderRadius: 16, flexShrink: 0,
+                    background: `${color}14`, border: `1.5px solid ${color}28`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+            >{icon}</div>
             <div>
-                <p style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(28px,3.5vw,34px)', color, lineHeight: 1, textShadow: `0 0 20px ${glowColor ?? color}38` }}>
-                    {value}
-                </p>
-                <p style={{ fontSize: 'clamp(10px,1.1vw,11.5px)', color: '#1A3A5C', marginTop: 5, fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif" }}>
-                    {label}
-                </p>
+                <p
+                    className="stat-value"
+                    style={{
+                        fontFamily: "'Montserrat',sans-serif", fontWeight: 900,
+                        fontSize: 'clamp(26px,3.5vw,34px)', color, lineHeight: 1,
+                        textShadow: `0 0 20px ${glowColor ?? color}38`,
+                    }}
+                >{value}</p>
+                <p style={{
+                    fontSize: 'clamp(10px,1.1vw,11.5px)', color: '#1A3A5C', marginTop: 5,
+                    fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase',
+                    fontFamily: "'Montserrat',sans-serif",
+                }}>{label}</p>
             </div>
         </div>
     );
@@ -135,14 +182,27 @@ function RankBadge({ rank }: { rank: number }) {
     };
     const c = configs[rank] ?? { bg: 'rgba(14,165,233,0.14)', color: '#1565C0' };
     return (
-        <span style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: c.bg, color: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, fontFamily: "'Montserrat',sans-serif" }}>{rank}</span>
+        <span style={{
+            width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+            background: c.bg, color: c.color,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11, fontWeight: 900, fontFamily: "'Montserrat',sans-serif",
+        }}>{rank}</span>
     );
 }
 
 function ScoreChip({ value }: { value: number | null }) {
-    if (value == null) return <span className="adm-badge" style={{ background: 'rgba(217,119,6,0.12)', color: '#A86100', border: '1px solid rgba(217,119,6,0.28)' }}>PENDING</span>;
+    if (value == null) return (
+        <span className="adm-badge" style={{ background: 'rgba(217,119,6,0.12)', color: '#A86100', border: '1px solid rgba(217,119,6,0.28)' }}>
+            PENDING
+        </span>
+    );
     const color = value >= 90 ? '#059669' : value >= 75 ? '#1565C0' : '#C4340E';
-    return <span style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 15, color }}>{value}</span>;
+    return (
+        <span style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 15, color }}>
+            {value}
+        </span>
+    );
 }
 
 // ─── MAIN ──────────────────────────────────────────────────
@@ -167,7 +227,10 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
     const sidebarWidth = sidebarCollapsed ? 64 : 240;
 
     return (
-        <div className={ready ? 'adm-ready' : ''} style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Open Sans',sans-serif" }}>
+        <div
+            className={ready ? 'adm-ready' : ''}
+            style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Open Sans',sans-serif" }}
+        >
             <style>{STYLES}</style>
 
             <AdminSidebar
@@ -178,36 +241,64 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
             />
 
             {/* ── Main area ── */}
-            <div style={{
-                marginLeft: sidebarWidth, flex: 1,
-                background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
-                position: 'relative', overflowX: 'hidden', minHeight: '100vh',
-                transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}>
+            <div
+                className="adm-main"
+                style={{
+                    marginLeft: sidebarWidth,
+                    flex: 1,
+                    background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
+                    position: 'relative', overflowX: 'hidden', minHeight: '100vh',
+                }}
+            >
                 {/* Background orbs */}
                 <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
                     {[
-                        { w: 600, h: 600, top: '-200px', left: '0px',   c: 'radial-gradient(circle,rgba(14,165,233,0.14) 0%,transparent 62%)', dur: '24s', delay: '0s' },
-                        { w: 460, h: 460, top: 'auto',   left: 'auto',  right: '-120px', bottom: '-100px', c: 'radial-gradient(circle,rgba(14,165,233,0.09) 0%,transparent 62%)', dur: '28s', delay: '-8s' },
-                        { w: 340, h: 340, top: '42%',    left: '36%',   c: 'radial-gradient(circle,rgba(255,255,255,0.38) 0%,transparent 62%)', dur: '20s', delay: '-4s' },
+                        { w: 600, h: 600, top: '-200px', left: '0px',  c: 'radial-gradient(circle,rgba(14,165,233,0.14) 0%,transparent 62%)', dur: '24s', delay: '0s' },
+                        { w: 460, h: 460, top: 'auto',   left: 'auto', right: '-120px', bottom: '-100px', c: 'radial-gradient(circle,rgba(14,165,233,0.09) 0%,transparent 62%)', dur: '28s', delay: '-8s' },
+                        { w: 340, h: 340, top: '42%',    left: '36%',  c: 'radial-gradient(circle,rgba(255,255,255,0.38) 0%,transparent 62%)', dur: '20s', delay: '-4s' },
                     ].map((b, i) => (
-                        <div key={i} style={{ position: 'absolute', width: b.w, height: b.h, borderRadius: '50%', top: (b as any).top, left: (b as any).left, right: (b as any).right, bottom: (b as any).bottom, background: b.c, animation: `orb-drift ${b.dur} ease-in-out infinite`, animationDelay: b.delay }} />
+                        <div key={i} style={{
+                            position: 'absolute', width: b.w, height: b.h, borderRadius: '50%',
+                            top: (b as any).top, left: (b as any).left,
+                            right: (b as any).right, bottom: (b as any).bottom,
+                            background: b.c,
+                            animation: `orb-drift ${b.dur} ease-in-out infinite`,
+                            animationDelay: b.delay,
+                        }} />
                     ))}
                     <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(11,31,58,0.07) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
                 </div>
 
-                {/* Content */}
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(32px,4vw,48px) clamp(20px,4vw,40px)', position: 'relative', zIndex: 1 }}>
+                {/* ── Mobile spacer (sama seperti PesertaDashboard) ── */}
+                <div className="adm-mobile-spacer" />
 
-                    {/* ══ HEADER — dari atas ══ */}
+                {/* Content */}
+                <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(32px,4vw,48px) clamp(20px,4vw,40px) 60px', position: 'relative', zIndex: 1 }}>
+
+                    {/* ══ HEADER ══ */}
                     <div className="anim-top delay-1" style={{ marginBottom: 28 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                            <div className="anim-pop delay-1" style={{ width: 48, height: 48, borderRadius: 16, background: 'linear-gradient(135deg,#0EA5E9,#1565C0)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(14,165,233,0.35)', flexShrink: 0 }}>
+                            <div className="anim-pop delay-1" style={{
+                                width: 48, height: 48, borderRadius: 16,
+                                background: 'linear-gradient(135deg,#0EA5E9,#1565C0)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: '0 8px 24px rgba(14,165,233,0.35)', flexShrink: 0,
+                            }}>
                                 <IconLayoutDashboard size={22} color="#fff" />
                             </div>
                             <div>
-                                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 4, fontFamily: "'Montserrat',sans-serif" }}>— ADMIN PANEL —</p>
-                                <h1 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 900, fontSize: 'clamp(20px,3vw,32px)', color: '#08182E', lineHeight: 1.2 }}>
+                                <p style={{
+                                    fontSize: 10, fontWeight: 700, letterSpacing: '.18em',
+                                    textTransform: 'uppercase', color: '#0EA5E9', marginBottom: 4,
+                                    fontFamily: "'Montserrat',sans-serif",
+                                }}>— ADMIN PANEL —</p>
+                                <h1
+                                    className="adm-header-title"
+                                    style={{
+                                        fontFamily: "'Montserrat',sans-serif", fontWeight: 900,
+                                        fontSize: 'clamp(20px,3vw,32px)', color: '#08182E', lineHeight: 1.2,
+                                    }}
+                                >
                                     Dashboard <span className="adm-gradient-sky">Admin</span>
                                 </h1>
                                 <p style={{ color: '#1A3A5C', fontSize: 13, marginTop: 2 }}>
@@ -217,7 +308,7 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                         </div>
                     </div>
 
-                    {/* ══ NOTIF PENDING — dari kiri ══ */}
+                    {/* ══ NOTIF PENDING ══ */}
                     {safeStats.pending_count > 0 && (
                         <Link href="/admin/users" className="adm-notif-banner anim-left delay-2">
                             <span style={{ fontSize: 26, flexShrink: 0, animation: 'float-slow 3s ease-in-out infinite' }}>
@@ -230,7 +321,7 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                 <p style={{ fontSize: 12, color: '#A86100' }}>Klik di sini untuk review dan setujui akun mereka.</p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                                <span className="adm-badge" style={{ background: 'rgba(217,119,6,0.18)', color: '#92400E', border: '1px solid rgba(217,119,6,0.32)' }}>
+                                <span className="adm-badge adm-notif-badge" style={{ background: 'rgba(217,119,6,0.18)', color: '#92400E', border: '1px solid rgba(217,119,6,0.32)' }}>
                                     {safeStats.pending_count} PENDING
                                 </span>
                                 <IconArrowRight size={18} color="#D97706" />
@@ -238,8 +329,11 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                         </Link>
                     )}
 
-                    {/* ══ STAT CARDS — dari kanan, stagger ══ */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 'clamp(12px,2vw,20px)', marginBottom: 28 }}>
+                    {/* ══ STAT CARDS ══ */}
+                    <div
+                        className="adm-stat-grid"
+                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 'clamp(12px,2vw,20px)', marginBottom: 28 }}
+                    >
                         <StatCard statIdx={0} icon={<IconUsers size={24} color="#1565C0" />}  label="Peserta Aktif"  value={safeStats.total_peserta} color="#1565C0" />
                         <StatCard statIdx={1} icon={<IconStar  size={24} color="#0EA5E9" />}  label="Total Juri"     value={safeStats.total_juri}    color="#0EA5E9" />
                         <StatCard statIdx={2} icon={<IconPhoto size={24} color="#059669" />}  label="Total Desain"   value={safeStats.total_desain}  color="#059669" glowColor="#34D399" />
@@ -249,11 +343,17 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                     </div>
 
                     {/* ══ BOTTOM GRID ══ */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(14px,2vw,24px)' }}>
+                    <div
+                        className="adm-bottom-grid"
+                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(14px,2vw,24px)' }}
+                    >
 
-                        {/* Desain terbaru — dari bawah */}
-                        <div className="adm-glass anim-bottom delay-3" style={{ borderRadius: 22, padding: 'clamp(20px,3vw,28px)', gridColumn: 'span 2' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        {/* Desain terbaru */}
+                        <div
+                            className="adm-glass anim-bottom delay-3"
+                            style={{ borderRadius: 22, padding: 'clamp(20px,3vw,28px)', gridColumn: 'span 2' }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div className="anim-pop delay-3" style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(14,165,233,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <IconPalette size={18} color="#0EA5E9" />
@@ -263,7 +363,13 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                         <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#08182E' }}>Desain Masuk</h2>
                                     </div>
                                 </div>
-                                <Link href="/admin/designs" style={{ textDecoration: 'none', fontSize: 12, fontWeight: 700, color: '#0EA5E9', fontFamily: "'Montserrat',sans-serif", letterSpacing: '.06em', padding: '7px 16px', borderRadius: 999, border: '1.5px solid rgba(14,165,233,0.28)', background: 'rgba(14,165,233,0.07)', transition: 'all .24s ease', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                <Link href="/admin/designs" style={{
+                                    textDecoration: 'none', fontSize: 12, fontWeight: 700, color: '#0EA5E9',
+                                    fontFamily: "'Montserrat',sans-serif", letterSpacing: '.06em',
+                                    padding: '7px 16px', borderRadius: 999, border: '1.5px solid rgba(14,165,233,0.28)',
+                                    background: 'rgba(14,165,233,0.07)', transition: 'all .24s ease',
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                }}>
                                     Lihat semua <IconArrowRight size={13} />
                                 </Link>
                             </div>
@@ -274,12 +380,16 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                     <p>Belum ada desain</p>
                                 </div>
                             ) : (
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+                                <div className="adm-table-wrap">
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 420 }}>
                                         <thead>
                                             <tr style={{ borderBottom: '1.5px solid rgba(14,165,233,0.14)' }}>
                                                 {['Desain', 'Peserta', 'Status', 'Nilai'].map(h => (
-                                                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#0B3A6A', fontFamily: "'Montserrat',sans-serif" }}>{h}</th>
+                                                    <th key={h} style={{
+                                                        padding: '10px 14px', textAlign: 'left', fontSize: 10,
+                                                        fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase',
+                                                        color: '#0B3A6A', fontFamily: "'Montserrat',sans-serif",
+                                                    }}>{h}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -288,8 +398,15 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                                 <tr key={d.id} className="adm-row-hover" style={{ borderBottom: '1px solid rgba(14,165,233,0.07)', transition: 'background .2s ease' }}>
                                                     <td style={{ padding: '12px 14px' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                            <img src={`/storage/${d.file_path}`} alt={d.judul} style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', border: '1.5px solid rgba(14,165,233,0.18)', flexShrink: 0 }} />
-                                                            <span style={{ fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat',sans-serif", fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{d.judul}</span>
+                                                            <img src={`/storage/${d.file_path}`} alt={d.judul} style={{
+                                                                width: 40, height: 40, borderRadius: 10, objectFit: 'cover',
+                                                                border: '1.5px solid rgba(14,165,233,0.18)', flexShrink: 0,
+                                                            }} />
+                                                            <span style={{
+                                                                fontWeight: 700, color: '#0B1F3A', fontFamily: "'Montserrat',sans-serif",
+                                                                fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap', maxWidth: 140,
+                                                            }}>{d.judul}</span>
                                                         </div>
                                                     </td>
                                                     <td style={{ padding: '12px 14px', color: '#1A3A5C', fontSize: 13 }}>{d.user?.name ?? '-'}</td>
@@ -310,9 +427,9 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                             )}
                         </div>
 
-                        {/* Leaderboard mini — dari kiri */}
+                        {/* Leaderboard mini */}
                         <div className="adm-glass anim-left delay-4" style={{ borderRadius: 22, padding: 'clamp(20px,3vw,28px)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div className="anim-pop delay-4" style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <IconTrophy size={18} color="#D97706" />
@@ -322,7 +439,13 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                         <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontWeight: 800, fontSize: 18, color: '#08182E' }}>Top 5</h2>
                                     </div>
                                 </div>
-                                <Link href="/admin/leaderboard" style={{ textDecoration: 'none', fontSize: 12, fontWeight: 700, color: '#D97706', fontFamily: "'Montserrat',sans-serif", letterSpacing: '.06em', padding: '7px 16px', borderRadius: 999, border: '1.5px solid rgba(217,119,6,0.28)', background: 'rgba(217,119,6,0.08)', transition: 'all .24s ease', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                <Link href="/admin/leaderboard" style={{
+                                    textDecoration: 'none', fontSize: 12, fontWeight: 700, color: '#D97706',
+                                    fontFamily: "'Montserrat',sans-serif", letterSpacing: '.06em',
+                                    padding: '7px 16px', borderRadius: 999, border: '1.5px solid rgba(217,119,6,0.28)',
+                                    background: 'rgba(217,119,6,0.08)', transition: 'all .24s ease',
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                }}>
                                     Semua <IconArrowRight size={13} />
                                 </Link>
                             </div>
@@ -339,7 +462,12 @@ export default function AdminDashboard({ auth, stats, recent_designs = [], top_r
                                         const rankBorder = item.rank === 1 ? 'rgba(245,158,11,0.32)' : item.rank === 2 ? 'rgba(148,163,184,0.32)' : item.rank === 3 ? 'rgba(180,83,9,0.28)' : 'rgba(14,165,233,0.14)';
                                         const scoreColor = item.rank === 1 ? '#D97706' : item.rank === 2 ? '#64748B' : item.rank === 3 ? '#B45309' : '#1565C0';
                                         return (
-                                            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, background: rankBg, border: `1.5px solid ${rankBorder}`, transition: 'transform .24s ease,box-shadow .24s ease', cursor: 'default' }}
+                                            <div key={item.id} style={{
+                                                display: 'flex', alignItems: 'center', gap: 12,
+                                                padding: '12px 14px', borderRadius: 14,
+                                                background: rankBg, border: `1.5px solid ${rankBorder}`,
+                                                transition: 'transform .24s ease,box-shadow .24s ease', cursor: 'default',
+                                            }}
                                                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 22px rgba(11,31,58,0.1)'; }}
                                                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
                                             >

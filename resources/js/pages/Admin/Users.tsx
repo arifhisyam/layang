@@ -14,7 +14,7 @@ interface User {
 }
 interface Props {
     auth: { user: AuthUser };
-    pending_users?: User[];   // optional → default []
+    pending_users?: User[];
     approved_users?: User[];
     rejected_users?: User[];
 }
@@ -117,6 +117,29 @@ const STYLES = `
     padding: 14px 16px; box-shadow: 0 4px 16px rgba(11,31,58,0.07);
   }
   .au-desktop-table { display: block; }
+
+  /* ── Main content: transition via CSS class ── */
+  .au-main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Mobile spacer */
+  .au-mobile-spacer { display: none; }
+
+  /* ── MOBILE OVERRIDES ── */
+  @media (max-width: 768px) {
+    /* KEY FIX: reset margin so content fills full width */
+    .au-main-content {
+      margin-left: 0 !important;
+      padding-bottom: 80px !important;
+    }
+
+    /* Show spacer for top bar */
+    .au-mobile-spacer {
+      display: block;
+      height: 56px;
+    }
+  }
 
   @media (max-width: 640px) {
     .au-desktop-table { display: none !important; }
@@ -239,7 +262,6 @@ export default function AdminUsers({ auth, pending_users = [], approved_users = 
     ];
     const currentUsers = { pending: pending_users, approved: approved_users, rejected: rejected_users }[activeTab];
     const sidebarWidth = sidebarCollapsed ? 64 : 240;
-    const totalUsers = pending_users.length + approved_users.length + rejected_users.length;
 
     return (
         <div className={ready ? 'au-ready' : ''} style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Open Sans',sans-serif" }}>
@@ -247,12 +269,20 @@ export default function AdminUsers({ auth, pending_users = [], approved_users = 
 
             <AdminSidebar user={auth.user} activePage="users" pendingUsers={pending_users.length} onCollapse={setSidebarCollapsed} />
 
-            <div style={{
-                marginLeft: sidebarWidth, flex: 1,
-                background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
-                minHeight: '100vh', position: 'relative',
-                transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}>
+            {/* ── KEY FIX: margin-left via CSS class, bukan inline style ── */}
+            <div
+                className="au-main-content"
+                style={{
+                    marginLeft: sidebarWidth,
+                    flex: 1,
+                    background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
+                    minHeight: '100vh',
+                    position: 'relative',
+                }}
+            >
+                {/* Mobile top spacer */}
+                <div className="au-mobile-spacer" />
+
                 {/* Orbs */}
                 <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', width: 500, height: 500, top: -150, right: -100, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.12) 0%,transparent 65%)', animation: 'orb-drift-u 22s ease-in-out infinite' }} />

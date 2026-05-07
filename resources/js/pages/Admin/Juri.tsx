@@ -126,7 +126,29 @@ const STYLES = `
   }
   .aj-desktop-table { display: block; }
 
+  /* ── Main content: transition controlled via CSS class ── */
+  .aj-main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Mobile spacer */
+  .aj-mobile-spacer { display: none; }
+
   /* ── MOBILE OVERRIDES ── */
+  @media (max-width: 768px) {
+    /* KEY FIX: reset margin so content fills full width */
+    .aj-main-content {
+      margin-left: 0 !important;
+      padding-bottom: 80px !important;
+    }
+
+    /* Show spacer for top bar */
+    .aj-mobile-spacer {
+      display: block;
+      height: 56px;
+    }
+  }
+
   @media (max-width: 640px) {
     .aj-desktop-table { display: none !important; }
     .aj-mobile-card { display: flex; flex-direction: column; }
@@ -232,12 +254,20 @@ export default function AdminJuri({ auth, juri_users, pending_count = 0 }: Props
 
             <AdminSidebar user={auth.user} activePage="juri" pendingUsers={pending_count} onCollapse={setSidebarCollapsed} />
 
-            <div style={{
-                marginLeft: sidebarWidth, flex: 1,
-                background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
-                minHeight: '100vh', position: 'relative',
-                transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}>
+            {/* ── KEY FIX: margin-left via CSS class, bukan inline style ── */}
+            <div
+                className="aj-main-content"
+                style={{
+                    marginLeft: sidebarWidth,
+                    flex: 1,
+                    background: 'linear-gradient(170deg,#A8D8FF 0%,#C4E5FF 16%,#DDF1FF 38%,#CBE8FF 62%,#B0D8FF 100%)',
+                    minHeight: '100vh',
+                    position: 'relative',
+                }}
+            >
+                {/* Mobile top spacer */}
+                <div className="aj-mobile-spacer" />
+
                 {/* Orbs */}
                 <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', width: 520, height: 520, top: -160, right: -100, borderRadius: '50%', background: 'radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 65%)', animation: 'orb-drift-j 24s ease-in-out infinite' }} />
